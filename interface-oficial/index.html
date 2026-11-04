@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#050b15">
+  <meta name="description" content="Interface Jarvis para revisão visual, sem serviços operacionais conectados.">
+  <title>JARVIS</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Ir para o conteúdo</a>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <div id="app" data-route="home">
+    <header class="app-header">
+      <a class="brand" href="#home" aria-label="Jarvis, tela inicial"><span class="brand-emblem" aria-hidden="true"><span>J</span></span><span>JARVIS<small>ASSISTENTE PESSOAL</small></span></a>
+      <div class="header-center"><span class="header-rule"></span><span id="nav-current">Início</span><span class="header-rule"></span></div>
+      <div class="header-status"><span class="service-badge"><i aria-hidden="true"></i>Serviços não configurados</span><time id="clock-label"></time></div>
+    </header>
+    <main id="main" tabindex="-1"><div id="view-root"></div></main>
+    <footer class="app-footer"><span>JARVIS <i>·</i> INTERFACE EM REVISÃO</span><span>SEM SERVIÇOS CONECTADOS <span class="footer-led" aria-hidden="true"></span></span></footer>
+  </div>
+  <dialog id="feature-dialog" aria-labelledby="feature-title" aria-describedby="feature-message">
+    <div class="dialog-icon" aria-hidden="true">+</div>
+    <p class="eyebrow">CONFIGURAÇÃO NECESSÁRIA</p>
+    <h2 id="feature-title">Não configurado</h2>
+    <p id="feature-message">Este serviço ainda não está configurado.</p>
+    <button id="feature-close" class="button button-primary" type="button">Entendido</button>
+  </dialog>
+  <noscript><p class="noscript-message">Ative o JavaScript para navegar pela interface do Jarvis. Nenhum serviço operacional está conectado.</p></noscript>
+</body>
+</html>
