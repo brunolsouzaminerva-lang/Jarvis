@@ -5,6 +5,7 @@ const app = document.getElementById('app');
 const root = document.getElementById('view-root');
 const dialog = document.getElementById('feature-dialog');
 const paths = {
+  agentes: ['M3 3h7v7H3ZM14 3h7v7h-7ZM3 14h7v7H3ZM14 14h7v7h-7Z'],
   ggo: ['M4 3v17h17', 'M9 15v-4m5 4V6m5 9v-6'],
   automacao: ['m13 2-9 12h7l-1 8 10-13h-8Z'],
   indicadores: ['M3 17 9 11l4 4 8-10', 'M15 5h6v6'],
@@ -112,10 +113,29 @@ function homeScreen() {
   const screen = element('section', 'home-screen');
   const mainTitle = element('h1', 'visually-hidden', 'JARVIS');
   mainTitle.tabIndex = -1;
-  const ggo = element('a', 'primary-ggo');
-  ggo.href = '#ggo';
-  ggo.append(icon('ggo'), element('span', '', 'GGO'));
-  screen.append(mainTitle, reactor(), microphone(), ggo);
+  const agents = element('a', 'primary-agents');
+  agents.href = '#agentes';
+  agents.append(icon('agentes'), element('span', '', 'Agentes'));
+  screen.append(mainTitle, reactor(), microphone(), agents);
+  return screen;
+}
+
+function agentsScreen() {
+  const screen = element('section', 'module-screen agents-screen');
+  screen.append(heading('Agentes', 'SEU JARVIS', 'Escolha uma especialidade para trabalhar com o Jarvis.'));
+  const grid = element('div', 'agents-grid');
+  const ggo = element('article', 'agent-card');
+  ggo.append(icon('ggo', 'icon feature-symbol'), element('p', 'eyebrow', 'AGENTE'),
+    element('h2', '', 'GGO'), element('p', 'card-description', 'Engenharia e Controladoria em um mesmo espaço.'),
+    element('span', 'outline-label', 'Integração não configurada'));
+  const open = element('a', 'button button-primary', 'Abrir GGO');
+  open.href = '#ggo';
+  open.append(icon('arrow'));
+  ggo.append(open);
+  grid.append(ggo);
+  const back = element('a', 'back-link', 'Voltar ao Jarvis');
+  back.href = '#home';
+  screen.append(grid, back);
   return screen;
 }
 
@@ -256,8 +276,8 @@ function render(focus = true) {
   visualState = 'idle';
   app.dataset.route = route;
   document.getElementById('nav-current').textContent = getScreenTitle(route);
-  document.title = route === 'home' ? 'JARVIS' : `${getScreenTitle(route)} · JARVIS`;
-  const screen = route === 'home' ? homeScreen() : route === 'ggo' ? ggoScreen()
+  document.title = 'JARVIS';
+  const screen = route === 'home' ? homeScreen() : route === 'agentes' ? agentsScreen() : route === 'ggo' ? ggoScreen()
     : route === 'configuracoes' ? settingsScreen() : moduleScreen(route);
   root.replaceChildren(screen);
   if (focus) {

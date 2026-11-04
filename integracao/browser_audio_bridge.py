@@ -9,7 +9,10 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import os
 from pathlib import Path
+import subprocess
+import sys
 import threading
 from typing import Awaitable, Callable
 import webbrowser
@@ -26,6 +29,23 @@ ORIGIN = f"http://{HOST}:{PORT}"
 MAX_FRAME_BYTES = 65536
 ASSETS = frozenset({"index.html", "app.js", "core.js", "styles.css",
                     "home-reference.css", "voice.js"})
+
+
+def _open_interface():
+    """O atalho abre a interface em janela propria do Edge, sem nova dependencia."""
+    if sys.platform == "win32" and os.environ.get("JARVIS_INTERFACE_MODE") == "app":
+        for variable in ("PROGRAMFILES(X86)", "PROGRAMFILES", "LOCALAPPDATA"):
+            root = os.environ.get(variable)
+            if not root:
+                continue
+            edge = Path(root) / "Microsoft" / "Edge" / "Application" / "msedge.exe"
+            if edge.is_file():
+                try:
+                    subprocess.Popen([str(edge), f"--app={ORIGIN}"], close_fds=True)
+                    return
+                except OSError:
+                    continue
+    webbrowser.open(ORIGIN)
 
 
 class PCMConverter:
@@ -199,7 +219,7 @@ class BrowserAudioBridge:
                                        name="jarvis-browser-mic")
         self.thread.start()
         if open_browser:
-            timer = threading.Timer(1.2, lambda: webbrowser.open(ORIGIN))
+            timer = threading.Timer(1.2, _open_interface)
             timer.daemon = True
             timer.start()
 

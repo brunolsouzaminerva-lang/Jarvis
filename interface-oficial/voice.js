@@ -1,10 +1,12 @@
 // Loaded only by the local BrowserAudioBridge. The static preview never imports it.
 const PCM_RATE = 48000;
 const READY_TIMEOUT_MS = 10000;
+const CLEANUP_TIMEOUT_MS = 5000;
 const MAX_BUFFERED_BYTES = PCM_RATE * Float32Array.BYTES_PER_ELEMENT * 2;
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const available = Boolean(AudioContextClass && navigator.mediaDevices?.getUserMedia && window.WebSocket);
 let session = null;
+let cleanup = null;
 let disposed = false;
 let status = {
   state: available ? 'idle' : 'error',
@@ -92,7 +94,7 @@ function renderControls() {
     delete mic.dataset.voiceStart;
     delete mic.dataset.voiceStop;
     mic.dataset[session ? 'voiceStop' : 'voiceStart'] = '';
-    mic.disabled = !available;
+    mic.disabled = !available || Boolean(cleanup);
     mic.setAttribute('aria-label', session ? 'Parar microfone' : 'Ativar microfone');
     mic.setAttribute('aria-describedby', 'voice-status');
   }
@@ -110,7 +112,7 @@ function renderControls() {
       row.append(actions);
     }
     const start = actions.querySelector('[data-voice-start]');
-    start.disabled = !available || Boolean(session);
+    start.disabled = !available || Boolean(session) || Boolean(cleanup);
     const stop = actions.querySelector('[data-voice-stop]');
     stop.disabled = !session;
   }
@@ -129,8 +131,10 @@ function renderControls() {
 function isCurrent(target) { return session === target && !target.cancelled; }
 
 function release(target) {
-  if (!target || target.cancelled) return;
+  if (!target) return Promise.resolve();
+  if (target.cancelled) return target.released || Promise.resolve();
   target.cancelled = true;
+  const pending = [];
   clearTimeout(target.readyTimer);
   if (target.processor) target.processor.onaudioprocess = null;
   for (const [track, handler] of target.trackHandlers || []) track.removeEventListener('ended', handler);
@@ -140,22 +144,53 @@ function release(target) {
   }
   if (target.context) {
     target.context.onstatechange = null;
-    try { Promise.resolve(target.context.close()).catch(() => {}); } catch { /* Already closed. */ }
+    if (target.context.state !== 'closed') {
+      try { pending.push(Promise.resolve(target.context.close())); }
+      catch (error) { pending.push(Promise.reject(error)); }
+    }
   }
   if (target.socket) {
     target.socket.onopen = null;
     target.socket.onmessage = null;
     target.socket.onerror = null;
     target.socket.onclose = null;
-    try { target.socket.close(); } catch { /* A failed socket may already be closed. */ }
+    if (target.socket.readyState !== WebSocket.CLOSED) {
+      pending.push(new Promise((resolve, reject) => {
+        const closed = () => resolve();
+        target.socket.addEventListener('close', closed, { once: true });
+        try { target.socket.close(); }
+        catch (error) {
+          target.socket.removeEventListener('close', closed);
+          reject(error);
+        }
+      }));
+    }
   }
+  target.released = Promise.all(pending);
+  return target.released;
 }
 
 function endSession(target, state, label, caption) {
   if (!isCurrent(target)) return;
   session = null;
-  release(target);
-  setStatus(state, label, caption);
+  const closing = { failed: false };
+  cleanup = closing;
+  setStatus('idle', 'Encerrando microfone', 'Aguarde a liberação do dispositivo e da conexão local.');
+  const failed = () => {
+    if (cleanup !== closing || disposed) return;
+    closing.failed = true;
+    setStatus('error', 'Falha ao encerrar microfone', 'Atualize esta página antes de ativar o microfone novamente.');
+  };
+  const timeout = setTimeout(failed, CLEANUP_TIMEOUT_MS);
+  release(target).then(() => {
+    clearTimeout(timeout);
+    if (cleanup !== closing || closing.failed || disposed) return;
+    cleanup = null;
+    setStatus(state, label, caption);
+  }, () => {
+    clearTimeout(timeout);
+    failed();
+  });
 }
 
 function reflectCapture(target) {
@@ -170,7 +205,7 @@ function reflectCapture(target) {
 }
 
 export async function startVoice() {
-  if (disposed || session || !available) return;
+  if (disposed || session || cleanup || !available) return;
   const target = { cancelled: false, ready: false, muted: true, trackHandlers: [] };
   session = target;
   setStatus('idle', 'Preparando microfone', 'Aguardando sua permissão e a conexão com a ponte local.');
@@ -248,9 +283,11 @@ export async function startVoice() {
 
 export function stopVoice() {
   const target = session;
-  session = null;
-  release(target);
-  if (!disposed) setStatus('idle', 'Microfone desligado', 'Captura encerrada. Nenhum áudio está sendo enviado.');
+  if (target) {
+    endSession(target, 'idle', 'Microfone desligado', 'Captura encerrada. O botão Mudo da janela de voz mantém sua configuração.');
+  } else if (!cleanup && !disposed) {
+    setStatus('idle', 'Microfone desligado', 'Captura encerrada. O botão Mudo da janela de voz mantém sua configuração.');
+  }
 }
 
 function onClick(event) {

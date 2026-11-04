@@ -71,11 +71,11 @@ body:has(#app[data-route="home"]) .ambient-grid { display: none; }
 .audio-wave i { width: 3px; height: var(--bar-height); border-radius: 50%; background: #00dfff; box-shadow: 0 0 7px #00baff85; }
 .home-screen .mic-label { font-size: clamp(20px, 1.75vw, 29px); font-weight: 500; margin-top: 15px; color: #e4f6ff; text-shadow: 0 0 5px #088cff44; }
 .home-screen .mic-status { font-size: 9px; color: #a0bfd1; margin-top: 7px; }
-.primary-ggo { display: flex; align-items: center; justify-content: center; gap: 26px; width: min(420px, 80vw); min-height: 87px; margin-top: 24px; position: relative; border: 3px solid #8defff; border-radius: 55px; color: #f1fbff; background: radial-gradient(ellipse at 50% 90%, #008cff25, transparent 70%), #001323; box-shadow: inset 0 0 12px #008cffb3, 0 0 3px #fff, 0 0 12px #008cff, 0 0 30px #008cff44, 0 5px 0 #001a2d; text-shadow: 0 0 5px #00afff70; font-size: 40px; font-weight: 500; letter-spacing: 2px; transition: transform .16s, box-shadow .16s; }
-.primary-ggo::before { content: ''; position: absolute; width: 160%; height: 2px; top: 50%; left: -30%; background: linear-gradient(90deg, transparent, #008dff44 15%, transparent 35%, transparent 65%, #008dff44 85%, transparent); pointer-events: none; }
-.primary-ggo svg { width: 45px; height: 45px; stroke-width: 1.65; filter: drop-shadow(0 0 4px #00cfff); }
-.primary-ggo:hover { transform: translateY(-2px); box-shadow: inset 0 0 19px #008cffcc, 0 0 5px #fff, 0 0 18px #00bfff, 0 0 42px #008cff66, 0 7px 0 #001a2d; }
-.primary-ggo:active { transform: translateY(3px); }
+.primary-agents { display: flex; align-items: center; justify-content: center; gap: 26px; width: min(420px, 80vw); min-height: 87px; margin-top: 24px; position: relative; border: 3px solid #8defff; border-radius: 55px; color: #f1fbff; background: radial-gradient(ellipse at 50% 90%, #008cff25, transparent 70%), #001323; box-shadow: inset 0 0 12px #008cffb3, 0 0 3px #fff, 0 0 12px #008cff, 0 0 30px #008cff44, 0 5px 0 #001a2d; text-shadow: 0 0 5px #00afff70; font-size: 40px; font-weight: 500; letter-spacing: 2px; transition: transform .16s, box-shadow .16s; }
+.primary-agents::before { content: ''; position: absolute; width: 160%; height: 2px; top: 50%; left: -30%; background: linear-gradient(90deg, transparent, #008dff44 15%, transparent 35%, transparent 65%, #008dff44 85%, transparent); pointer-events: none; }
+.primary-agents svg { width: 45px; height: 45px; stroke-width: 1.65; filter: drop-shadow(0 0 4px #00cfff); }
+.primary-agents:hover { transform: translateY(-2px); box-shadow: inset 0 0 19px #008cffcc, 0 0 5px #fff, 0 0 18px #00bfff, 0 0 42px #008cff66, 0 7px 0 #001a2d; }
+.primary-agents:active { transform: translateY(3px); }
 
 @media (max-width:1100px) {
   .header-status .service-badge, .header-status #clock-label { display: none; }
@@ -110,9 +110,9 @@ body:has(#app[data-route="home"]) .ambient-grid { display: none; }
   .audio-wave { gap: 4px; width: 78px; overflow: hidden; }
   .audio-wave i { min-width: 2px; width: 2px; height: calc(var(--bar-height) * .65); }
   .home-screen .mic-label { font-size: 21px; margin-top: 14px; }
-  .primary-ggo { width: min(300px, 78vw); min-height: 68px; font-size: 31px; margin-top: 27px; gap: 20px; }
-  .primary-ggo svg { width: 35px; height: 35px; }
-  .primary-ggo::before { width: 112%; left: -6%; }
+  .primary-agents { width: min(300px, 78vw); min-height: 68px; font-size: 31px; margin-top: 27px; gap: 20px; }
+  .primary-agents svg { width: 35px; height: 35px; }
+  .primary-agents::before { width: 112%; left: -6%; }
   .areas-menu nav { right: -2px; }
 }
 @media (max-width:380px) {

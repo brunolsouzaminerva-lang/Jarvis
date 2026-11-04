@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const destinations = {
-  ggo: 'GGO',
+  agentes: 'Agentes',
   automacao: 'Automação',
   indicadores: 'Indicadores',
   relatorios: 'Relatórios',
@@ -89,22 +89,31 @@ test('teclado aciona a navegação e recebe foco no conteúdo de destino', async
   await summary.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('#areas-menu')).toHaveJSProperty('open', true);
-  const ggo = page.locator('#areas-menu a[href="#ggo"]');
-  await ggo.focus();
+  const agents = page.locator('#areas-menu a[href="#agentes"]');
+  await agents.focus();
   await page.keyboard.press('Enter');
-  const heading = page.getByRole('heading', { level: 1, name: 'GGO', exact: true });
+  const heading = page.getByRole('heading', { level: 1, name: 'Agentes', exact: true });
   await expect(heading).toBeVisible();
   await expect(heading).toBeFocused();
 });
 
-test('botão GGO em destaque abre o painel secundário', async ({ page }) => {
+test('Jarvis abre o catálogo de agentes e GGO permanece dentro dele', async ({ page }) => {
   await page.goto('/');
-  const primary = page.locator('.primary-ggo');
-  await expect(primary).toHaveAttribute('href', '#ggo');
-  await expect(primary).toBeVisible();
+  await expect(page).toHaveTitle('JARVIS');
+  const primary = page.locator('.primary-agents');
+  await expect(primary).toHaveAttribute('href', '#agentes');
+  await expect(primary).toHaveText('Agentes');
+  await expect(page.locator('#areas-menu a[href="#ggo"]')).toHaveCount(0);
   await primary.click();
+  await expect(page.locator('#app')).toHaveAttribute('data-route', 'agentes');
+  await expect(page.getByRole('heading', { level: 1, name: 'Agentes', exact: true })).toBeFocused();
+  await expect(page.locator('.agent-card')).toHaveCount(1);
+  await expect(page.locator('.agent-card')).toContainText('Integração não configurada');
+  await page.locator('.agent-card a[href="#ggo"]').click();
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'ggo');
   await expect(page.getByRole('heading', { level: 1, name: 'GGO', exact: true })).toBeVisible();
+  await expect(page).toHaveTitle('JARVIS');
+  await expect(page.locator('.ggo-sidebar .sidebar-note')).toContainText('Nenhum serviço conectado');
 });
 
 test('Escape fecha o menu de áreas e devolve o foco ao acionador', async ({ page }) => {
@@ -190,7 +199,7 @@ test('ações operacionais ausentes mostram Não configurado e o diálogo devolv
 test('todas as telas cabem em viewport móvel sem transbordamento da página', async ({ page }) => {
   for (const width of [320, 360, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
-    for (const route of ['home', ...Object.keys(destinations)]) {
+    for (const route of ['home', 'ggo', ...Object.keys(destinations)]) {
       await page.goto(`/#${route}`);
       await expect(page.locator('#app')).toHaveAttribute('data-route', route);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
@@ -212,7 +221,9 @@ test('navegação e prévias permanecem funcionais sem rede após carregar a int
   await page.goto('/');
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'home');
   await context.setOffline(true);
-  await page.locator('.primary-ggo').click();
+  await page.locator('.primary-agents').click();
+  await expect(page.locator('#app')).toHaveAttribute('data-route', 'agentes');
+  await page.locator('.agent-card a[href="#ggo"]').click();
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'ggo');
   await selectArea(page, 'configuracoes');
   await page.locator('[data-state-choice="processing"]').click();

@@ -1,11 +1,51 @@
 # Nova interface com a voz do Jarvis pessoal
 
+JARVIS é o aplicativo principal. A home abre **Agentes**; o GGO fica dentro
+desse catálogo como uma especialidade. O título da janela permanece JARVIS.
+
 A nova home LED pode usar a mesma entrada de microfone do `main.py` original.
 O preparador cria outra pasta, troca a ponte de áudio **somente nessa cópia** e
 acrescenta os seis arquivos da interface. O `main.py`, a janela nativa, os
 provedores de voz e os scripts GGO continuam presentes. A janela nativa ainda
 controla as configurações, o mudo e a saída de voz; a nova home abre no navegador.
 Esta etapa não substitui a janela PyQt inteira.
+
+## Atualizar a cópia já testada e criar o iniciador
+
+Se a preparação anterior já mostrou `COPIA PREPARADA`, feche a instância do
+Jarvis e sua tela de microfone. Baixe novamente o ZIP da branch
+`codex/integracao-voz-interface`, extraia em uma pasta nova e abra o PowerShell
+na pasta do `README.md`. Execute:
+
+```powershell
+python .\tools\atualizar_interface_local.py --pasta "$env:USERPROFILE\Desktop\Jarvis-Teste" --atalho
+```
+
+O atualizador confere os hashes existentes, guarda backup local da interface e
+substitui apenas a ponte e os seis arquivos públicos. `main.py`, configurações,
+memórias, scripts GGO e a origem não entram na lista de escrita. Edições pessoais
+na interface são recusadas para revisão; repetir uma atualização idêntica não
+reescreve os arquivos. Falhas de escrita revertem os arquivos já substituídos;
+o backup permanece disponível para revisão.
+
+O Desktop real do Windows recebe **Jarvis - Interface nova.cmd**. Duplo clique
+inicia o mesmo Python usado no preparo, com o diretório correto. O `main.py`
+continua sendo o ponto de entrada e abre a nova tela quando o provedor conecta.
+O iniciador usa o Edge instalado para abrir uma janela própria sem barra de
+endereço; se o Edge não estiver disponível, usa o navegador padrão. Não há nova
+instalação nem alteração global de configuração. A janela nativa da voz ainda
+fica disponível; a interface web não foi embutida no PyQt.
+
+Para criar apenas o iniciador após uma preparação nova:
+
+```powershell
+python .\tools\criar_atalho_local.py --pasta "$env:USERPROFILE\Desktop\Jarvis-Teste"
+```
+
+O criador nunca inicia o aplicativo, não substitui um iniciador de conteúdo
+diferente e respeita Desktop redirecionado. O `.cmd` deixa a mensagem visível se
+o aplicativo terminar com erro. Fechar apenas a tela nova encerra a captura;
+para desligar o aplicativo, feche também a janela nativa.
 
 O arquivo original recebido foi inspecionado como referência, sem executar o
 aplicativo. Seus 269 arquivos foram preservados e verificados por SHA-256 na
@@ -74,10 +114,20 @@ confirma o transporte do microfone; não confirma uma resposta do modelo.
    ouve e responde pela saída configurada na janela nativa.
 2. Ative/desative o mudo na janela nativa: a nova tela deve acompanhar e suspender
    o envio de áudio enquanto estiver silenciada.
-3. Abra GGO ou Configurações e use **Parar microfone** no cabeçalho. A captura deve
+3. Abra **Agentes → GGO** ou Configurações e use **Parar microfone** no cabeçalho. A captura deve
    encerrar também ao fechar a aba ou perder a conexão, sem reconexão automática.
 4. Engenharia e Controladoria continuam mostrando **Não configurado**. Não
    execute DUX, Excel ou processamento GGO nesse teste.
+
+**Parar microfone** encerra a captura no navegador e não altera a preferência de
+mudo da janela nativa. Ao parar, **Encerrando microfone** aparece até o dispositivo
+e a conexão terminarem; só depois **Ativar microfone** é liberado. Reative e
+confira uma nova resposta. Se a liberação exceder cinco segundos, a tela mostra
+erro e pede atualização da página, sem iniciar outra captura sobre a anterior.
+
+Se a tela mostrar **Ouvindo** sem resposta, confira também os controles originais
+de wake word/PTT na janela nativa. Abrir o microfone não desperta automaticamente
+um assistente configurado para aguardar a palavra de ativação.
 
 O áudio passa pelo callback original do Jarvis, que preserva suas regras de
 mudo, wake word, PTT e eco. O provedor configurado no aplicativo pode processá-lo
@@ -109,6 +159,9 @@ necessário apenas para os testes automatizados, não para abrir a interface.
 Também foi validado em Chromium o caminho completo de um microfone **fictício**
 do navegador, passando por WebSocket real até o callback PCM16: pelo menos
 32.768 bytes recebidos, interrupção no mudo e parada após navegar, sem erros JS.
+Também passaram cinco ciclos completos de ativar, navegar e parar/reativar,
+com áudio fictício pela conexão real e sem erros JavaScript. O encerramento
+assíncrono lento e seu timeout têm testes determinísticos adicionais.
 Nenhum `main.py` original, provedor de IA, DUX ou Excel foi executado na nuvem.
 A audição, resposta de voz e o dispositivo de saída reais ainda dependem do teste
 manual no Windows. A Etapa 201 continua pendente de validação operacional.

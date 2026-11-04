@@ -16,6 +16,10 @@ prepara outra pasta a partir do Jarvis pessoal, preservando o `main.py` e a orig
 O preparador usa o Python existente; não exige instalação de Node ou Git no
 computador para criar essa cópia.
 
+JARVIS é o aplicativo principal, com o GGO dentro do catálogo **Agentes**.
+O mesmo roteiro inclui atualização da cópia já testada e um iniciador no
+Desktop que abre o `main.py` e a tela LED em janela própria do Edge.
+
 A [interface demonstrativa do Jarvis](interface/index.html) pode ser aberta
 diretamente no navegador. Ela inclui reator LED central, botões 3D e simulações
 locais. Consulte [como usar e os limites da interface](docs/INTERFACE.md).

@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 from fastapi.testclient import TestClient
@@ -20,6 +21,41 @@ ORIGIN = bridge_module.ORIGIN
 
 def frame(values):
     return np.asarray(values, dtype="<f4").tobytes()
+
+
+class InterfaceWindowTests(unittest.TestCase):
+    def test_normal_start_uses_the_existing_default_browser(self):
+        with patch.dict(bridge_module.os.environ, {}, clear=True), \
+                patch.object(bridge_module.webbrowser, "open") as browser, \
+                patch.object(bridge_module.subprocess, "Popen") as process:
+            bridge_module._open_interface()
+        browser.assert_called_once_with(ORIGIN)
+        process.assert_not_called()
+
+    def test_desktop_mode_opens_edge_app_window_with_argument_list(self):
+        with tempfile.TemporaryDirectory(prefix="jarvis-window-synthetic-") as folder:
+            root = Path(folder) / "Programs with spaces & symbols"
+            edge = root / "Microsoft" / "Edge" / "Application" / "msedge.exe"
+            edge.parent.mkdir(parents=True)
+            edge.write_text("SYNTHETIC EXECUTABLE - DO NOT RUN", encoding="utf-8")
+            with patch.object(bridge_module.sys, "platform", "win32"), \
+                    patch.dict(bridge_module.os.environ, {
+                        "JARVIS_INTERFACE_MODE": "app", "PROGRAMFILES": str(root),
+                    }, clear=True), \
+                    patch.object(bridge_module.webbrowser, "open") as browser, \
+                    patch.object(bridge_module.subprocess, "Popen") as process:
+                bridge_module._open_interface()
+            process.assert_called_once_with([str(edge), f"--app={ORIGIN}"], close_fds=True)
+            browser.assert_not_called()
+
+    def test_unavailable_edge_uses_default_browser_without_new_dependency(self):
+        with patch.object(bridge_module.sys, "platform", "win32"), \
+                patch.dict(bridge_module.os.environ, {"JARVIS_INTERFACE_MODE": "app"}, clear=True), \
+                patch.object(bridge_module.webbrowser, "open") as browser, \
+                patch.object(bridge_module.subprocess, "Popen") as process:
+            bridge_module._open_interface()
+        browser.assert_called_once_with(ORIGIN)
+        process.assert_not_called()
 
 
 class AudioConversionTests(unittest.TestCase):

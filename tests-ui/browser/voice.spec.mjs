@@ -2,24 +2,19 @@ import { test, expect } from '@playwright/test';
 
 // These doubles never open a microphone, audio device or network connection.
 async function installVoiceDoubles(page, options = {}) {
-  await page.addInitScript(({ permission = 'granted', sampleRate = 48000 }) => {
+  await page.addInitScript(({
+    permission = 'granted', sampleRate = 48000,
+    deferredContextClose = false, deferredSocketClose = false,
+  }) => {
     const state = {
       permissionCalls: 0,
       constraints: [],
       trackStops: 0,
+      tracks: [],
       contexts: [],
       processors: [],
       sockets: [],
     };
-    const track = Object.assign(new EventTarget(), {
-      kind: 'audio',
-      readyState: 'live',
-      stop() {
-        if (this.readyState !== 'ended') state.trackStops += 1;
-        this.readyState = 'ended';
-      },
-    });
-    const stream = { getTracks: () => [track], getAudioTracks: () => [track] };
     Object.defineProperty(navigator, 'mediaDevices', {
       configurable: true,
       value: {
@@ -27,7 +22,15 @@ async function installVoiceDoubles(page, options = {}) {
           state.permissionCalls += 1;
           state.constraints.push(constraints);
           if (permission === 'denied') throw new DOMException('Permissão sintética recusada', 'NotAllowedError');
-          return stream;
+          const track = Object.assign(new EventTarget(), {
+            kind: 'audio', readyState: 'live',
+            stop() {
+              if (this.readyState !== 'ended') state.trackStops += 1;
+              this.readyState = 'ended';
+            },
+          });
+          state.tracks.push(track);
+          return { getTracks: () => [track], getAudioTracks: () => [track] };
         },
       },
     });
@@ -51,7 +54,16 @@ async function installVoiceDoubles(page, options = {}) {
         state.contexts.push(this);
       }
       async resume() { this.state = 'running'; }
-      async close() { this.closeCalls += 1; this.state = 'closed'; }
+      close() {
+        this.closeCalls += 1;
+        if (deferredContextClose) {
+          return new Promise((resolve) => {
+            this.completeClose = () => { this.state = 'closed'; resolve(); };
+          });
+        }
+        this.state = 'closed';
+        return Promise.resolve();
+      }
       createMediaStreamSource() { this.source = audioNode(); return this.source; }
       createGain() { return audioNode({ gain: { value: 1 } }); }
       createScriptProcessor() {
@@ -94,8 +106,13 @@ async function installVoiceDoubles(page, options = {}) {
       close() {
         this.closeCalls += 1;
         if (this.readyState === FakeWebSocket.CLOSED) return;
-        this.readyState = FakeWebSocket.CLOSED;
-        this.emit('close', new CloseEvent('close', { code: 1000 }));
+        this.readyState = FakeWebSocket.CLOSING;
+        const finish = () => {
+          this.readyState = FakeWebSocket.CLOSED;
+          this.emit('close', new CloseEvent('close', { code: 1000 }));
+        };
+        if (deferredSocketClose) this.completeClose = finish;
+        else finish();
       }
     }
     Object.assign(FakeWebSocket.prototype, { CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3 });
@@ -107,6 +124,7 @@ async function installVoiceDoubles(page, options = {}) {
           permissionCalls: state.permissionCalls,
           constraints: state.constraints,
           trackStops: state.trackStops,
+          tracks: state.tracks.map((track) => track.readyState),
           contexts: state.contexts.map((context) => ({ state: context.state, closeCalls: context.closeCalls })),
           sockets: state.sockets.map((socket) => ({
             url: socket.url, readyState: socket.readyState, closeCalls: socket.closeCalls, sent: socket.sent,
@@ -127,6 +145,10 @@ async function installVoiceDoubles(page, options = {}) {
         socket.readyState = FakeWebSocket.CLOSED;
         socket.emit('close', new CloseEvent('close', { code: 1006 }));
       },
+      finishCleanup() {
+        for (const context of state.contexts) context.completeClose?.();
+        for (const socket of state.sockets) socket.completeClose?.();
+      },
       frame(values = [0.25, -0.5, 0, 1]) {
         const data = Float32Array.from(values);
         for (const processor of state.processors) {
@@ -145,15 +167,22 @@ async function loadVoice(page, options) {
   await expect(page.locator('[data-voice-start]').first()).toBeVisible();
 }
 
+async function openGgo(page) {
+  await page.locator('.primary-agents').click();
+  await expect(page.locator('#app')).toHaveAttribute('data-route', 'agentes');
+  await page.locator('.agent-card a[href="#ggo"]').click();
+  await expect(page.locator('#app')).toHaveAttribute('data-route', 'ggo');
+}
+
 const snapshot = (page) => page.evaluate(() => window.voiceHarness.snapshot());
 
-async function openSocket(page) {
-  await expect.poll(async () => (await snapshot(page)).sockets.length).toBe(1);
+async function openSocket(page, expectedCount = 1) {
+  await expect.poll(async () => (await snapshot(page)).sockets.length).toBe(expectedCount);
   await page.evaluate(() => window.voiceHarness.open());
 }
 
-async function ready(page) {
-  await openSocket(page);
+async function ready(page, expectedCount = 1) {
+  await openSocket(page, expectedCount);
   await page.evaluate(() => window.voiceHarness.message({ type: 'ready', muted: false }));
 }
 
@@ -259,13 +288,106 @@ test('parar libera a trilha, o WebSocket e o AudioContext e impede novos envios'
   await expect(page.locator('[data-voice-start]').first()).toBeEnabled();
 });
 
+test('parar no GGO e reativar na home cria captura nova sem reutilizar áudio encerrado', async ({ page }) => {
+  await loadVoice(page);
+  await page.locator('[data-voice-start]').first().click();
+  await ready(page);
+  await page.evaluate(() => window.voiceHarness.frame([0.25, -0.5, 0, 1]));
+  await openGgo(page);
+  await page.locator('#voice-stop-header').click();
+  await expect(page.locator('#voice-status')).toHaveAttribute('data-state', 'idle');
+  await page.locator('.brand').click();
+  await expect(page.locator('#app')).toHaveAttribute('data-route', 'home');
+  await expect(page.locator('[data-voice-start]').first()).toBeEnabled();
+  expect((await snapshot(page)).permissionCalls).toBe(1);
+
+  await page.locator('[data-voice-start]').first().click();
+  await ready(page, 2);
+  await expect(page.locator('#voice-status')).toHaveAttribute('data-state', 'listening');
+  await page.evaluate(() => window.voiceHarness.frame([0.5, 0, -0.25]));
+  const result = await snapshot(page);
+  expect(result.permissionCalls).toBe(2);
+  expect(result.tracks).toEqual(['ended', 'live']);
+  expect(result.contexts).toEqual([
+    { state: 'closed', closeCalls: 1 }, { state: 'running', closeCalls: 0 },
+  ]);
+  expect(result.sockets[0]).toMatchObject({ readyState: 3, closeCalls: 1 });
+  expect(result.sockets[0].sent).toHaveLength(1);
+  expect(result.sockets[1]).toMatchObject({ readyState: 1, closeCalls: 0 });
+  expect(result.sockets[1].sent).toEqual([
+    { kind: 'binary', values: [0.5, 0, -0.25], byteLength: 12 },
+  ]);
+  await page.locator('[data-voice-stop]').first().click();
+  expect((await snapshot(page)).tracks).toEqual(['ended', 'ended']);
+});
+
+test('reativação aguarda o fechamento pendente do socket e do AudioContext', async ({ page }) => {
+  await loadVoice(page, { deferredContextClose: true, deferredSocketClose: true });
+  await page.locator('[data-voice-start]').first().click();
+  await ready(page);
+  await page.locator('#voice-stop-header').click();
+  const start = page.locator('[data-voice-start]').first();
+  await expect(start).toBeDisabled();
+  // A programmatic invocation also must not overlap a pending teardown.
+  await page.evaluate(async () => { void (await import('/voice.js')).startVoice(); });
+  const closing = await snapshot(page);
+  expect(closing.permissionCalls).toBe(1);
+  expect(closing.tracks).toEqual(['ended']);
+  expect(closing.contexts).toEqual([{ state: 'running', closeCalls: 1 }]);
+  expect(closing.sockets).toHaveLength(1);
+  expect(closing.sockets[0]).toMatchObject({ readyState: 2, closeCalls: 1 });
+
+  await page.evaluate(() => window.voiceHarness.finishCleanup());
+  await expect(start).toBeEnabled();
+  await start.click();
+  await ready(page, 2);
+  await page.evaluate(() => window.voiceHarness.frame([0.5, 0, -0.25]));
+  await expect(page.locator('#voice-status')).toHaveAttribute('data-state', 'listening');
+  const restarted = await snapshot(page);
+  expect(restarted.permissionCalls).toBe(2);
+  expect(restarted.tracks).toEqual(['ended', 'live']);
+  expect(restarted.sockets[1].sent).toEqual([
+    { kind: 'binary', values: [0.5, 0, -0.25], byteLength: 12 },
+  ]);
+  await page.locator('[data-voice-stop]').first().click();
+  await page.evaluate(() => window.voiceHarness.finishCleanup());
+});
+
+test('fechamento sem resposta apresenta erro limitado e não inicia outra captura', async ({ page }) => {
+  await page.clock.install();
+  await loadVoice(page, { deferredContextClose: true, deferredSocketClose: true });
+  await page.locator('[data-voice-start]').first().click();
+  await ready(page);
+  await page.locator('#voice-stop-header').click();
+  await expect(page.locator('[data-voice-start]').first()).toBeDisabled();
+
+  await page.clock.fastForward(60000);
+  await expect(page.locator('#voice-status')).toHaveAttribute('data-state', 'error');
+  await expect(page.locator('[data-voice-start]').first()).toBeDisabled();
+  await page.evaluate(async () => { void (await import('/voice.js')).startVoice(); });
+  const timedOut = await snapshot(page);
+  expect(timedOut.permissionCalls).toBe(1);
+  expect(timedOut.tracks).toEqual(['ended']);
+  expect(timedOut.sockets).toHaveLength(1);
+  expect(timedOut.sockets[0]).toMatchObject({ readyState: 2, closeCalls: 1 });
+
+  // A late device/socket release must not silently enable capture again.
+  await page.evaluate(() => window.voiceHarness.finishCleanup());
+  await expect(page.locator('#voice-status')).not.toHaveAttribute('data-state', 'listening');
+  await expect(page.locator('[data-voice-start]').first()).toBeDisabled();
+  const released = await snapshot(page);
+  expect(released.permissionCalls).toBe(1);
+  expect(released.tracks).toEqual(['ended']);
+  expect(released.sockets).toHaveLength(1);
+});
+
 test('navegação conserva a sessão e o controle de parada sem confundir prévia com escuta', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 844 });
   await loadVoice(page);
   await page.locator('[data-voice-start]').first().click();
   await ready(page);
   await expect(page.locator('#voice-status')).toHaveAttribute('data-state', 'listening');
-  await page.locator('.primary-ggo').click();
+  await openGgo(page);
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'ggo');
   await expect(page.locator('#reactor')).toHaveAttribute('data-state', 'listening');
   await page.locator('.ggo-navigation a[href="#configuracoes"]').click();
