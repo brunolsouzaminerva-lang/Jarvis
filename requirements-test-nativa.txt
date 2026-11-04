@@ -1,0 +1,2 @@
+# Somente testes/preview da interface nativa; o Jarvis original ja usa PyQt6.
+PyQt6==6.10.2

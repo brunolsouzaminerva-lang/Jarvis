@@ -24,6 +24,22 @@ def frame(values):
 
 
 class InterfaceWindowTests(unittest.TestCase):
+    def test_native_mode_opens_only_the_microphone_companion(self):
+        with tempfile.TemporaryDirectory(prefix="jarvis-native-window-synthetic-") as folder:
+            edge = Path(folder) / "Microsoft" / "Edge" / "Application" / "msedge.exe"
+            edge.parent.mkdir(parents=True)
+            edge.write_text("SYNTHETIC - DO NOT EXECUTE", encoding="utf-8")
+            with patch.object(bridge_module.sys, "platform", "win32"), \
+                    patch.dict(bridge_module.os.environ, {
+                        "JARVIS_INTERFACE_MODE": "native", "PROGRAMFILES": folder,
+                    }, clear=True), \
+                    patch.object(bridge_module.webbrowser, "open") as browser, \
+                    patch.object(bridge_module.subprocess, "Popen") as process:
+                bridge_module._open_interface()
+            process.assert_called_once_with(
+                [str(edge), f"--app={ORIGIN}/microfone", "--window-size=520,660"], close_fds=True)
+            browser.assert_not_called()
+
     def test_normal_start_uses_the_existing_default_browser(self):
         with patch.dict(bridge_module.os.environ, {}, clear=True), \
                 patch.object(bridge_module.webbrowser, "open") as browser, \
@@ -120,6 +136,19 @@ class BridgeTests(unittest.TestCase):
     def test_missing_assets_fail_closed(self):
         (self.root / "voice.js").unlink()
         self.assertEqual(self.client.get("/").status_code, 503)
+        self.assertEqual(self.client.get("/microfone").status_code, 503)
+
+    def test_native_microphone_page_uses_shared_capture_without_full_app(self):
+        response = self.client.get("/microfone")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('src="/voice.js"', response.text)
+        self.assertIn('id="voice-status"', response.text)
+        self.assertIn('class="mic-action"', response.text)
+        self.assertIn('data-voice-start', response.text)
+        self.assertNotIn('src="app.js"', response.text)
+        self.assertNotIn('src="/app.js"', response.text)
+        self.assertNotIn('getUserMedia(', response.text)
+        self.assertEqual(response.headers["cache-control"], "no-store")
 
     def test_symlink_asset_cannot_serve_files_outside_the_interface(self):
         outside = self.root / "synthetic-secret.txt"

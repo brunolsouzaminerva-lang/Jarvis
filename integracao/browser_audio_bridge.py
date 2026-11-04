@@ -30,10 +30,27 @@ MAX_FRAME_BYTES = 65536
 ASSETS = frozenset({"index.html", "app.js", "core.js", "styles.css",
                     "home-reference.css", "voice.js"})
 
+MICROPHONE_PAGE = '''<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Microfone do JARVIS</title><style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#12334b,#050c16 70%);color:#e8f7ff;font:16px "Segoe UI",Arial,sans-serif;display:grid;place-items:center;padding:24px}
+#app{max-width:460px;text-align:center}h1{font-size:26px;letter-spacing:2px}p{line-height:1.6;color:#b0cadb}
+.microphone-zone{display:grid;justify-items:center;gap:14px;margin:28px 0}.mic-button{display:grid;justify-items:center;gap:10px;min-width:190px;padding:20px;border:1px solid #9aeaff;border-radius:24px;background:linear-gradient(#235879,#10283e);box-shadow:inset 0 1px #d7f8ff80,inset 0 -5px #041421,0 8px 20px #0007,0 0 20px #009cff30;color:#edfcff;font:600 16px "Segoe UI",sans-serif;cursor:pointer}.mic-button svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:1.8}.mic-button:hover{background:linear-gradient(#32769a,#153c55)}.mic-button:active{transform:translateY(3px)}.mic-button:focus-visible{outline:3px solid white;outline-offset:5px}.mic-button:disabled{opacity:.55;cursor:wait}.mic-status{font-weight:600;color:#9aeaff}
+#voice-status{font-size:14px;min-height:72px}#voice-status[data-state="error"]{color:#ff9baa}
+</style><script type="module" src="/voice.js"></script></head><body><main id="app">
+<h1>Microfone do JARVIS</h1><p>A interface e os controles ficam na janela do Jarvis. Mantenha esta janela aberta para usar a voz.</p>
+<div class="microphone-zone"><button type="button" class="mic-button" data-voice-start aria-label="Ativar microfone" aria-describedby="voice-status">
+<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M6 10v1a6 6 0 0 0 12 0v-1m-6 7v5m-4 0h8"/></svg>
+<span class="mic-action">Ativar microfone</span></button><span class="mic-status">Microfone desligado</span></div>
+<p id="voice-status" role="status" aria-live="polite">A captura começa somente depois de ativar o microfone e permitir o acesso no navegador.</p>
+</main></body></html>'''
+
 
 def _open_interface():
     """O atalho abre a interface em janela propria do Edge, sem nova dependencia."""
-    if sys.platform == "win32" and os.environ.get("JARVIS_INTERFACE_MODE") == "app":
+    mode = os.environ.get("JARVIS_INTERFACE_MODE")
+    target = ORIGIN + "/microfone" if mode == "native" else ORIGIN
+    if sys.platform == "win32" and mode in {"app", "native"}:
         for variable in ("PROGRAMFILES(X86)", "PROGRAMFILES", "LOCALAPPDATA"):
             root = os.environ.get(variable)
             if not root:
@@ -41,11 +58,14 @@ def _open_interface():
             edge = Path(root) / "Microsoft" / "Edge" / "Application" / "msedge.exe"
             if edge.is_file():
                 try:
-                    subprocess.Popen([str(edge), f"--app={ORIGIN}"], close_fds=True)
+                    arguments = [str(edge), f"--app={target}"]
+                    if mode == "native":
+                        arguments.append("--window-size=520,660")
+                    subprocess.Popen(arguments, close_fds=True)
                     return
                 except OSError:
                     continue
-    webbrowser.open(ORIGIN)
+    webbrowser.open(target)
 
 
 class PCMConverter:
@@ -133,6 +153,12 @@ class BrowserAudioBridge:
         async def bridge_status():
             return JSONResponse({"available": True, "connected": self._connected.is_set(),
                                  "muted": bool(self.is_muted())})
+
+        @self.app.get("/microfone")
+        async def microphone():
+            if self._asset("voice.js") is None:
+                return HTMLResponse("Captura incompleta. Atualize a ponte local.", status_code=503)
+            return HTMLResponse(MICROPHONE_PAGE)
 
         @self.app.get("/{name}")
         async def asset(name: str):

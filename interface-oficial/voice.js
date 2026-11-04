@@ -97,6 +97,8 @@ function renderControls() {
     mic.disabled = !available || Boolean(cleanup);
     mic.setAttribute('aria-label', session ? 'Parar microfone' : 'Ativar microfone');
     mic.setAttribute('aria-describedby', 'voice-status');
+    const actionLabel = mic.querySelector('.mic-action');
+    if (actionLabel) actionLabel.textContent = session ? 'Parar microfone' : 'Ativar microfone';
   }
   const micStatus = document.querySelector('.mic-status');
   if (micStatus) micStatus.textContent = status.label;
