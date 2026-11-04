@@ -2,6 +2,10 @@
 
 Automação do GGO Diário com Python, Excel e relatórios Dux.
 
+Para testar a versão que reúne interface e preparador, siga o
+[roteiro de testes integrados no Windows](docs/TESTES_INTEGRADOS.md), sempre em
+uma pasta nova e com dados sintéticos.
+
 ## Estado
 Estrutura inicial de desenvolvimento. O código operacional permanece no computador corporativo e **não foi importado**.
 
