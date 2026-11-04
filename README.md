@@ -24,3 +24,7 @@ python -m unittest discover -s tests -v
 A [preparação da Etapa 201](docs/ETAPA_201.md) inclui testes com dados sintéticos
 para a leitura das datas e para o aplicador proposto. A integração real com o Dux
 depende do configurador operacional e de validação no computador autorizado.
+
+A [preparação da integração no Windows](docs/INTEGRACAO_WINDOWS.md) descreve o
+backup local verificado, a área separada de desenvolvimento, os comandos manuais
+e o rollback da revisão, sem escrita na pasta original.
