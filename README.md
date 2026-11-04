@@ -1,6 +1,11 @@
-# Projeto GGO — Jarvis
+# JARVIS
 
-Automação do GGO Diário com Python, Excel e relatórios Dux.
+A [interface nativa moderna](docs/INTERFACE_NATIVA.md) atualiza a janela PyQt6
+que o `main.py` abre, com LED e botoes modernos na copia preparada. O navegador
+fica como janela auxiliar de captura de voz; a instalacao original e preservada.
+
+Assistente pessoal com interface LED e agentes. A automação do GGO Diário,
+com Python, Excel e relatórios Dux, é uma das especialidades em preparação.
 
 Para testar a versão que reúne interface e preparador, siga o
 [roteiro de testes integrados no Windows](docs/TESTES_INTEGRADOS.md), sempre em

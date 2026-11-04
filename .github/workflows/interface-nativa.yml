@@ -1,0 +1,49 @@
+name: Interface nativa Jarvis
+on:
+  push:
+    paths:
+      - 'integracao/jarvis_interface_nativa.py'
+      - 'tests-native/**'
+      - 'tools/**'
+      - 'tests/**'
+      - 'requirements-test-nativa.txt'
+      - '.github/workflows/interface-nativa.yml'
+  pull_request:
+    paths:
+      - 'integracao/jarvis_interface_nativa.py'
+      - 'tests-native/**'
+      - 'tools/**'
+      - 'tests/**'
+      - 'requirements-test-nativa.txt'
+      - '.github/workflows/interface-nativa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      QT_QPA_PLATFORM: offscreen
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependencias da interface nativa de teste
+        run: python -m pip install -r requirements-test-nativa.txt
+      - name: Componentes Qt com fonte sintetica
+        shell: python
+        run: |
+          import sys
+          import unittest
+          suite = unittest.defaultTestLoader.discover('tests-native')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          for case, failure in result.failures + result.errors:
+              message = failure.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print(f'::error title={case.id()}::{message}')
+          sys.exit(0 if result.wasSuccessful() else 1)
