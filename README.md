@@ -14,3 +14,13 @@ Estrutura inicial de desenvolvimento. O código operacional permanece no computa
 
 ## Desenvolvimento
 Alterações devem passar por pull request e testes. A execução do Dux e do Excel corporativo exige computador autorizado.
+
+Para executar a suíte com Python 3.11, sem dependências adicionais:
+
+```sh
+python -m unittest discover -s tests -v
+```
+
+A [preparação da Etapa 201](docs/ETAPA_201.md) inclui testes com dados sintéticos
+para a leitura das datas e para o aplicador proposto. A integração real com o Dux
+depende do configurador operacional e de validação no computador autorizado.
