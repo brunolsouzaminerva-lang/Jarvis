@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import datetime, timezone
 from decimal import Decimal
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 import json
 import os
 from pathlib import Path
@@ -412,7 +412,7 @@ class MarketingFoundationTests(unittest.TestCase):
                 if kind == "corrupt":
                     target.write_bytes(b"synthetic corrupt SQLite file\x00")
                 else:
-                    with sqlite3.connect(target) as connection:
+                    with closing(sqlite3.connect(target)) as connection, connection:
                         connection.execute("CREATE TABLE unrelated_fixture (value TEXT)")
                         connection.execute("INSERT INTO unrelated_fixture VALUES ('synthetic foreign data')")
                 before = tree_bytes(self.runtime)
@@ -431,7 +431,7 @@ class MarketingFoundationTests(unittest.TestCase):
                 target = self.database(CLIENT_B)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(self.database(), target)
-                with sqlite3.connect(target) as connection:
+                with closing(sqlite3.connect(target)) as connection, connection:
                     connection.execute("UPDATE module_metadata SET client_id = ?", (str(CLIENT_B),))
                     connection.execute('UPDATE module_metadata SET "' + column + '" = ?', (value,))
                 before = tree_bytes(self.runtime)
@@ -441,7 +441,7 @@ class MarketingFoundationTests(unittest.TestCase):
 
     def test_trigger_name_resembling_sqlite_internal_prefix_is_rejected_without_mutation(self):
         self.service.upsert_client("manager-a", self.profile())
-        with sqlite3.connect(self.database()) as connection:
+        with closing(sqlite3.connect(self.database())) as connection, connection:
             connection.execute(
                 "CREATE TRIGGER sqliteXevil AFTER INSERT ON audit_events "
                 "BEGIN DELETE FROM audit_events; END"
@@ -453,7 +453,7 @@ class MarketingFoundationTests(unittest.TestCase):
 
     def test_trigger_and_table_with_the_same_name_cannot_hide_schema_tampering(self):
         self.service.upsert_client("manager-a", self.profile())
-        with sqlite3.connect(self.database()) as connection:
+        with closing(sqlite3.connect(self.database())) as connection, connection:
             metadata_sql = connection.execute(
                 "SELECT sql FROM sqlite_master WHERE type='table' AND name='module_metadata'"
             ).fetchone()[0]
@@ -474,7 +474,7 @@ class MarketingFoundationTests(unittest.TestCase):
         self.service.upsert_client("manager-a", self.profile())
         for value in ("synthetic string", {"synthetic key": "synthetic value"}, None, 42):
             with self.subTest(value=value):
-                with sqlite3.connect(self.database()) as connection:
+                with closing(sqlite3.connect(self.database())) as connection, connection:
                     connection.execute("UPDATE client_profile SET objectives = ?", (json.dumps(value),))
                 before = tree_bytes(self.runtime)
                 with self.assertRaises(StorageIsolationError):
@@ -515,7 +515,7 @@ class MarketingFoundationTests(unittest.TestCase):
             account_manager="private-manager-3a5d", monthly_fee=Decimal("9876.54"),
         )
         self.service.upsert_client(credential, profile)
-        with sqlite3.connect(self.database()) as connection:
+        with closing(sqlite3.connect(self.database())) as connection, connection:
             name = self.audit_table(connection)
             cursor = connection.execute('SELECT * FROM "' + name.replace('"', '""') + '"')
             columns = {column[0] for column in cursor.description}
