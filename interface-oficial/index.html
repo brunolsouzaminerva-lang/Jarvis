@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#050b15">
+  <meta name="description" content="Interface Jarvis para revisão visual, sem serviços operacionais conectados.">
+  <title>JARVIS</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="home-reference.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Ir para o conteúdo</a>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <div id="app" data-route="home">
+    <div class="reference-frame" aria-hidden="true">
+      <svg class="frame-desktop" viewBox="0 0 1600 900" preserveAspectRatio="none">
+        <path class="frame-secondary" d="M80 1 14 68V790L62 838H355L392 883H1510L1586 800V82L1555 49M33 129 55 108"/>
+        <path class="frame-primary" d="M1 105H405Q412 105 420 96L497 15Q501 11 508 11H1104Q1110 11 1115 16L1171 72Q1175 76 1182 76H1543L1575 109V787L1520 851H1302L1271 884H396L363 851H79L33 805V130L55 109"/>
+        <path class="frame-secondary" d="M88 13H105M1441 853H1537L1575 816M43 817 84 863H329M701 881H894"/>
+      </svg>
+      <svg class="frame-mobile" viewBox="0 0 400 850" preserveAspectRatio="none"><path class="frame-primary" d="M24 1 7 25V748L28 790H83L99 831H307L322 791H373L393 749V84L379 60H290L275 13H225L195 99H1"/><path class="frame-secondary" d="M17 15 3 34V753L24 800H81L94 839H311L327 800H379L397 753V89L385 70H294"/></svg>
+      <span class="frame-light light-logo"></span><span class="frame-light light-top"></span>
+      <span class="frame-light light-bottom"></span><span class="frame-light light-left"></span><span class="frame-light light-right"></span>
+    </div>
+    <header class="app-header">
+      <a class="brand" href="#home" aria-label="Jarvis, tela inicial"><span class="brand-copy"><strong class="brand-wordmark">JARVIS</strong><small>ASSISTENTE INTELIGENTE</small></span></a>
+      <div class="header-center"><span class="header-rule"></span><span id="nav-current">Início</span><span class="header-rule"></span></div>
+      <div class="header-status"><span class="service-badge"><i aria-hidden="true"></i>Serviços não configurados</span><time id="clock-label"></time>
+        <div class="header-tools">
+          <button type="button" class="chrome-control connection-control" data-unconfigured="Conectividade" aria-label="Status de conexão: não configurado" title="Serviços não configurados"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8 16a5 5 0 0 1 8 0"/><circle cx="12" cy="20" r="1"/></svg></button>
+          <a class="chrome-control voice-control" href="#configuracoes" aria-label="Configurações de voz" title="Microfone não configurado"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M6 10v1a6 6 0 0 0 12 0v-1m-6 7v5m-4 0h8"/></svg></a>
+          <a class="chrome-control" href="#configuracoes" aria-label="Configurações" title="Configurações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1 1 5-1 4 3 1 1 3h6l1-3 3-1-1-4 1-5-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+          <details id="areas-menu" class="areas-menu"><summary class="chrome-control" aria-label="Abrir áreas do Jarvis" title="Áreas do Jarvis"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary><nav aria-label="Áreas do Jarvis"><p>ÁREAS DO JARVIS</p><a href="#ggo">GGO</a><a href="#automacao">Automação</a><a href="#indicadores">Indicadores</a><a href="#relatorios">Relatórios</a><a href="#agenda">Agenda</a><a href="#configuracoes">Configurações</a></nav></details>
+          <button class="chrome-control window-control" type="button" disabled aria-label="Minimizar janela: indisponível no navegador" title="Disponível no aplicativo desktop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18"/></svg></button>
+          <button class="chrome-control window-control" type="button" disabled aria-label="Fechar janela: indisponível no navegador" title="Disponível no aplicativo desktop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19"/></svg></button>
+        </div>
+      </div>
+    </header>
+    <main id="main" tabindex="-1"><div id="view-root"></div></main>
+    <footer class="app-footer"><span>JARVIS <i>·</i> INTERFACE EM REVISÃO</span><span>SEM SERVIÇOS CONECTADOS <span class="footer-led" aria-hidden="true"></span></span></footer>
+  </div>
+  <dialog id="feature-dialog" aria-labelledby="feature-title" aria-describedby="feature-message">
+    <div class="dialog-icon" aria-hidden="true">+</div>
+    <p class="eyebrow">CONFIGURAÇÃO NECESSÁRIA</p>
+    <h2 id="feature-title">Não configurado</h2>
+    <p id="feature-message">Este serviço ainda não está configurado.</p>
+    <button id="feature-close" class="button button-primary" type="button">Entendido</button>
+  </dialog>
+  <noscript><p class="noscript-message">Ative o JavaScript para navegar pela interface do Jarvis. Nenhum serviço operacional está conectado.</p></noscript>
+</body>
+</html>

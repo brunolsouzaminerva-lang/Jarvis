@@ -1,0 +1,18 @@
+{
+  "name": "jarvis-interface-oficial",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:ui",
+    "test:unit": "node --test tests-ui/core.test.mjs",
+    "test:ui": "playwright test",
+    "serve": "node tests-ui/serve.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

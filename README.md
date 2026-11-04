@@ -9,6 +9,10 @@ A [interface demonstrativa do Jarvis](interface/index.html) pode ser aberta
 diretamente no navegador. Ela inclui reator LED central, botões 3D e simulações
 locais. Consulte [como usar e os limites da interface](docs/INTERFACE.md).
 
+A [proposta da interface oficial da issue #5](docs/INTERFACE_OFICIAL.md) fica em
+`interface-oficial/`, com home JARVIS, painel GGO, estados LED e navegação testada.
+A interface anterior e a automação existente permanecem preservadas.
+
 ## Regras essenciais
 - Criar uma única cópia de trabalho do GGO por ciclo, atualizando Engenharia e Controladoria no mesmo arquivo.
 - Preservar o arquivo anterior e o histórico diário.

@@ -1,0 +1,34 @@
+name: Interface Jarvis
+on:
+  push:
+    paths:
+      - 'interface-oficial/**'
+      - 'tests-ui/**'
+      - 'package*.json'
+      - 'playwright.config.mjs'
+      - '.github/workflows/interface.yml'
+  pull_request:
+    paths:
+      - 'interface-oficial/**'
+      - 'tests-ui/**'
+      - 'package*.json'
+      - 'playwright.config.mjs'
+      - '.github/workflows/interface.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  interface:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Dependencias de teste com lockfile
+        run: npm ci --ignore-scripts
+      - name: Chromium para validacao
+        run: npx playwright install --with-deps chromium
+      - name: Testes de estados e navegacao
+        run: npm test
