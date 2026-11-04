@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#080c14">
+  <title>Jarvis — Central de operações</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-engineering" viewBox="0 0 24 24"><path d="m14 3 7 7-11 11H3v-7Z"/><path d="m12 5 7 7M6 11l3 3m0-6 3 3M5 19l2-2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 3v17h17M9 15v-4m5 4V6m5 9v-6"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 3 7M3 4v7h7m2-4v5l3 2"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-12 4h.01M15 15h.01"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 10 6-10 6L2 9Zm-9 11 9 5 9-5M3 18l9 5 9-5"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M2 12h5l3-8 4 16 3-8h5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  </defs></svg>
+
+  <a class="skip-link" href="#main">Ir para o conteúdo</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Menu principal">
+      <a class="brand" href="#main" aria-label="Jarvis, central de operações">
+        <span class="brand-reactor" aria-hidden="true"><span></span></span>
+        <span>JARVIS<small>CENTRAL DE OPERAÇÕES</small></span>
+      </a>
+      <p class="nav-label">WORKSPACE</p>
+      <nav class="navigation" aria-label="Seções do Jarvis">
+        <button class="nav-item active" data-view="overview" aria-current="page"><svg class="icon"><use href="#i-grid"/></svg><span>Visão geral</span><span class="nav-dot"></span></button>
+        <button class="nav-item" data-view="engineering"><svg class="icon"><use href="#i-engineering"/></svg><span>Engenharia</span></button>
+        <button class="nav-item" data-view="controllership"><svg class="icon"><use href="#i-chart"/></svg><span>Controladoria</span></button>
+        <button class="nav-item" data-view="history"><svg class="icon"><use href="#i-history"/></svg><span>Histórico</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="connection-card"><span class="status-dot"></span><strong>Dados de exemplo</strong><p>Nenhum serviço conectado.</p><span class="connection-line"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+        <div class="sidebar-footer"><span class="avatar">JA</span><div><strong>Jarvis</strong><small>Seu centro de comando</small></div><span class="version">01</span></div>
+      </div>
+    </aside>
+
+    <main id="main" class="main-content" tabindex="-1">
+      <header class="topbar"><div class="breadcrumb">WORKSPACE <span>/</span> <strong id="page-title">Visão geral</strong></div><div class="topbar-right"><span class="demo-badge"><span></span>Modo demonstração</span><time id="clock-label">—</time></div></header>
+
+      <section data-panel="overview" aria-labelledby="overview-title">
+        <div class="page-intro"><div><p class="eyebrow">CENTRAL DE COMANDO</p><h1 id="overview-title">Tudo em sua órbita.</h1><p>Seu próximo ciclo começa com uma visão clara.</p></div><span class="intro-mark" aria-hidden="true">J / 01</span></div>
+
+        <section class="hero-card" aria-label="Assistente Jarvis">
+          <div class="hero-grid" aria-hidden="true"></div>
+          <div class="hero-copy"><span class="tag"><span class="status-dot"></span>ASSISTENTE DE OPERAÇÕES</span><h2>Jarvis,<br><span>ao seu comando.</span></h2><p>Engenharia e Controladoria<br>em um único centro de operações.</p><div class="hero-actions"><button id="simulate-button" class="button button-primary"><svg class="icon"><use href="#i-play"/></svg>Simular ciclo</button><button id="period-open" class="button button-secondary"><svg class="icon"><use href="#i-calendar"/></svg>Definir período</button></div><p class="hero-footnote"><span class="tiny-dot"></span>Explore o fluxo com dados de exemplo.</p></div>
+          <div class="reactor-stage"><div class="orbit-label orbit-label-top"><span class="line"></span>JARVIS CORE<span class="coordinate">01.00</span></div><div id="reactor" class="reactor" aria-hidden="true"><div class="reactor-halo"></div><div class="reactor-orbit orbit-one"></div><div class="reactor-orbit orbit-two"></div><div class="reactor-orbit orbit-three"></div><div class="reactor-shell"><div class="reactor-rim"></div><div class="reactor-glass"></div><div class="reactor-core"><svg viewBox="0 0 120 120"><path d="M60 13 101 84H19Z"/><path d="m60 29 28 48H32Z"/><circle cx="60" cy="60" r="17"/></svg></div><span class="reactor-axis axis-one"></span><span class="reactor-axis axis-two"></span><span class="reactor-axis axis-three"></span></div><span class="orbit-point point-one"></span><span class="orbit-point point-two"></span></div><div class="reactor-caption"><span class="status-dot"></span><span id="reactor-status">Em espera</span><span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div></div>
+          <div class="hero-details"><p class="eyebrow">OPERAÇÃO CONJUNTA</p><strong class="cycle-number">02<span>ETAPAS DO CICLO</span></strong><p>Engenharia + Controladoria.<br>Uma mesma direção.</p><div class="hero-details-line"></div><span class="tag">PERÍODO DA DEMONSTRAÇÃO</span><span class="hero-period" data-period-label>01/10/2026 — 31/10/2026</span></div>
+          <span class="hero-corner" aria-hidden="true">J.A.R.V.I.S / INTERFACE CONCEPT</span>
+        </section>
+
+        <div class="metrics-grid"><article class="metric-card"><span class="metric-icon"><svg class="icon"><use href="#i-calendar"/></svg></span><div><p>Período selecionado</p><strong id="period-display">01/10/2026 — 31/10/2026</strong><small>Defina o intervalo da demonstração</small></div></article><article class="metric-card"><span class="metric-icon violet"><svg class="icon"><use href="#i-layers"/></svg></span><div><p>Ciclo de trabalho</p><strong>Uma cópia. Duas etapas.</strong><small>Engenharia + Controladoria</small></div></article><article class="metric-card"><span class="metric-icon mint"><svg class="icon"><use href="#i-pulse"/></svg></span><div><p>Integrações</p><strong>Em demonstração</strong><small>DUX e Excel não conectados</small></div></article></div>
+
+        <div class="dashboard-bottom"><section class="workflows"><div class="section-heading"><h2>Suas operações</h2><span>01 / 02</span></div><div class="operation-grid"><article class="operation-card"><div class="operation-top"><span class="operation-icon"><svg class="icon"><use href="#i-engineering"/></svg></span><span class="outline-badge">DEMO</span></div><h3>Engenharia</h3><p>Explore a preparação e a revisão<br>do ciclo de trabalho.</p><button class="button button-dark" data-go-view="engineering">Abrir operação<svg class="icon"><use href="#i-arrow"/></svg></button></article><article class="operation-card"><div class="operation-top"><span class="operation-icon purple"><svg class="icon"><use href="#i-chart"/></svg></span><span class="outline-badge">DEMO</span></div><h3>Controladoria</h3><p>Confira o período e acompanhe<br>a simulação das etapas.</p><button class="button button-dark" data-go-view="controllership">Abrir operação<svg class="icon"><use href="#i-arrow"/></svg></button></article></div></section>
+          <section class="activity-card" aria-labelledby="activity-heading"><div class="section-heading"><h2 id="activity-heading">Nesta sessão</h2><svg class="icon muted"><use href="#i-history"/></svg></div><ul id="activity-list" class="activity-list"></ul><div class="simulation-progress"><div class="progress-heading"><span id="execution-status" role="status">Aguardando simulação</span><button id="simulation-cancel" class="text-button" hidden>Cancelar</button></div><div id="cycle-progress" class="progress-track" role="progressbar" aria-label="Progresso da simulação" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-bar"></span></div></div></section></div>
+      </section>
+
+      <section data-panel="engineering" aria-labelledby="engineering-title" hidden><div class="page-intro"><div><p class="eyebrow">OPERAÇÕES</p><h1 id="engineering-title">Engenharia</h1><p>Conheça o fluxo com uma simulação local.</p></div></div><article class="detail-card"><span class="operation-icon"><svg class="icon"><use href="#i-engineering"/></svg></span><h2>Prepare o próximo ciclo.</h2><p>Uma demonstração visual da preparação e revisão. Nenhum arquivo GGO será aberto ou alterado.</p><div class="detail-period"><svg class="icon"><use href="#i-calendar"/></svg><span data-period-label>01/10/2026 — 31/10/2026</span></div><ol class="step-list"><li><span>01</span>Conferir o período da sessão</li><li><span>02</span>Simular a preparação da Engenharia</li><li><span>03</span>Simular a revisão da Controladoria</li></ol><button id="engineering-simulate" class="button button-primary"><svg class="icon"><use href="#i-play"/></svg>Simular ciclo completo</button></article></section>
+
+      <section data-panel="controllership" aria-labelledby="controllership-title" hidden><div class="page-intro"><div><p class="eyebrow">OPERAÇÕES</p><h1 id="controllership-title">Controladoria</h1><p>Um período claro, antes de cada etapa.</p></div></div><article class="detail-card"><span class="operation-icon purple"><svg class="icon"><use href="#i-chart"/></svg></span><h2>Comece pelas datas.</h2><p>Confira o intervalo escolhido para esta demonstração. A leitura dos campos reais do DUX ainda depende da integração no computador autorizado.</p><div class="detail-period"><svg class="icon"><use href="#i-calendar"/></svg><span data-period-label>01/10/2026 — 31/10/2026</span></div><div class="detail-actions"><button id="period-open-secondary" class="button button-secondary"><svg class="icon"><use href="#i-calendar"/></svg>Definir período</button><button id="controllership-simulate" class="button button-primary"><svg class="icon"><use href="#i-play"/></svg>Simular ciclo completo</button></div></article></section>
+
+      <section data-panel="history" aria-labelledby="history-title" hidden><div class="page-intro"><div><p class="eyebrow">ACOMPANHAMENTO</p><h1 id="history-title">Histórico da sessão</h1><p>Somente os eventos desta demonstração. Nada é salvo ao fechar.</p></div><button id="clear-history" class="button button-secondary">Limpar histórico</button></div><div class="history-card"><div class="table-scroll"><table><thead><tr><th>Horário · Brasília</th><th>Atividade</th><th>Período</th><th>Status</th></tr></thead><tbody id="history-body"></tbody></table></div><p id="history-empty" class="empty-state" hidden>Nenhum evento nesta sessão.</p></div></section>
+
+      <footer class="main-footer"><span>JARVIS <i>·</i> CENTRAL DE OPERAÇÕES</span><span>Interface demonstrativa <span class="footer-dot"></span></span></footer>
+    </main>
+  </div>
+
+  <dialog id="period-dialog" aria-labelledby="dialog-title"><form id="period-form"><div class="dialog-heading"><div><p class="eyebrow">PLANEJAMENTO</p><h2 id="dialog-title">Definir período</h2></div><button id="period-cancel" class="icon-button" type="button" aria-label="Fechar seleção de período"><svg class="icon"><use href="#i-close"/></svg></button></div><p class="dialog-description">Escolha o intervalo para a demonstração. Nenhuma data será alterada no DUX.</p><div class="date-fields"><label>Data inicial<input id="start-date" aria-describedby="period-error" type="date" value="2026-10-01" required></label><label>Data final<input id="end-date" aria-describedby="period-error" type="date" value="2026-10-31" required></label></div><p id="period-error" class="form-error" role="alert"></p><button class="button button-primary dialog-submit" type="submit"><svg class="icon"><use href="#i-check"/></svg>Aplicar à demonstração</button></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
