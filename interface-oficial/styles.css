@@ -117,6 +117,16 @@ dialog { background: linear-gradient(140deg,#132c43,#091522); color: #effaff; bo
 
 /* Route headings receive focus for navigation announcements, not keyboard interaction. */
 h1[tabindex="-1"]:focus { outline: none; }
+.agents-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,340px),1fr)); gap: 22px; max-width: 1120px; margin: 32px 0; }
+.agent-card { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 30px; border: 1px solid #82cfee38; border-radius: 22px; background: linear-gradient(145deg,#102b41,#081522); box-shadow: inset 0 1px #d8f6ff15,0 10px 25px #0003; }
+.agent-card h2,.agent-card p { margin: 0; }
+.agent-card h2 { font-size: 27px; letter-spacing: 2px; }
+.agent-card .outline-label { margin: 0; }
+.agent-card .button { margin-top: 8px; }
+.voice-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+.voice-actions .button { min-height: 40px; }
+.voice-stop-header { color: #ffb2b2; font-size: 20px; }
+#app[data-voice="local"] .state-button:disabled { cursor: default; opacity: .5; }
 @media (max-width:850px) {
   .settings-screen .settings-layout { grid-template-columns: 1fr; }
   .ggo-sidebar-title { margin: 0 10px 0 0; font-size: 15px; }

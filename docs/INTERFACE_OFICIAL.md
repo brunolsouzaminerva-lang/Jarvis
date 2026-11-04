@@ -1,15 +1,22 @@
 # Interface JARVIS — proposta da issue #5
 
-Nova home e painel GGO preparados em uma camada web isolada, para revisão da
-interface oficial. A aplicação do notebook e sua automação não estão disponíveis
-neste checkout. Nenhum arquivo da pasta corporativa foi acessado ou alterado.
+Este documento descreve a prévia estática da home e do painel GGO. O modo
+opcional que conecta a voz do Jarvis pessoal está no
+[roteiro de integração local](INTEGRACAO_VOZ_LOCAL.md), com preparação em outra
+pasta e teste manual no Windows. A base pessoal enviada em ZIP foi analisada
+separadamente e permanece fora deste checkout. A instalação original e os dados
+operacionais foram preservados.
 
 A referência da tela inicial foi recebida na conversa e aplicada: moldura azul
 recortada, núcleo azul/branco, microfone com ondas decorativas, frase
-“Fale comigo, senhor.” e botão GGO principal. A imagem específica do painel GGO
+“Fale comigo, senhor.” e botão luminoso principal. Conforme a definição atual do
+proprietário, a home abre **Agentes** e o GGO é um agente dentro desse catálogo.
+A imagem específica do painel GGO
 ainda não foi disponibilizada; sua reprodução fiel continua pendente.
 
 ![Home JARVIS com núcleo azul e anel branco](images/jarvis-oficial-home.png)
+
+![Agentes do Jarvis com acesso ao GGO](images/jarvis-oficial-agentes.png)
 
 ## Arquitetura e preservação
 
@@ -22,7 +29,7 @@ automação, testes Python e workflow GGO.
 | --- | --- |
 | `interface-oficial/index.html` | Shell acessível, cabeçalho, conteúdo e diálogo de serviço ausente. |
 | `interface-oficial/styles.css` | Tema LED, botões 3D, seis estados visuais, responsividade e redução de movimento. |
-| `interface-oficial/home-reference.css` | Composição da home conforme a imagem: moldura, anéis, microfone, botão GGO e menu do cabeçalho. |
+| `interface-oficial/home-reference.css` | Composição da home: moldura, anéis, microfone, botão Agentes e menu do cabeçalho. |
 | `interface-oficial/core.js` | Rotas permitidas, estados e títulos; funções puras sem DOM ou serviços. |
 | `interface-oficial/app.js` | Componentes reutilizáveis de reator, navegação, botões, cartões e telas. |
 | `tests-ui/` | Testes unitários e de navegador e servidor estático local de revisão. |
@@ -36,11 +43,12 @@ desenvolvimento, fixada no lockfile.
 ## Navegação e estados
 
 A home se chama **JARVIS**, com núcleo azul LED/branco, anel segmentado e
-microfone em destaque na parte inferior. O botão GGO é a ação principal;
+microfone em destaque na parte inferior. O botão **Agentes** é a ação principal;
 os seis destinos continuam acessíveis pelo menu “Áreas do Jarvis” no cabeçalho.
-Os destinos são `#ggo`, `#automacao`,
+Os destinos são `#agentes`, `#automacao`,
 `#indicadores`, `#relatorios`, `#agenda` e `#configuracoes`; voltar/avançar do
-navegador e links diretos funcionam. Rotas desconhecidas apresentam a home.
+navegador e links diretos funcionam. O cartão GGO abre `#ggo`, cujo link direto
+permanece válido. O título da janela é sempre JARVIS. Rotas desconhecidas apresentam a home.
 O menu funciona por teclado e fecha com Escape, devolvendo o foco ao acionador.
 Os símbolos de minimizar/fechar reproduzem o desenho, mas ficam desabilitados no
 navegador; nenhum comando de janela nativa inexistente é executado. Conectividade

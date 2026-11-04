@@ -10,6 +10,7 @@ import {
 
 const destinations = {
   home: 'JARVIS',
+  agentes: 'Agentes',
   ggo: 'GGO',
   automacao: 'Automação',
   indicadores: 'Indicadores',
@@ -18,7 +19,7 @@ const destinations = {
   configuracoes: 'Configurações',
 };
 
-test('a navegação oferece a home e os seis destinos da interface aprovada', () => {
+test('a navegação oferece o Jarvis, o catálogo de agentes e as áreas existentes', () => {
   assert.deepEqual(new Set(ROUTES), new Set(Object.keys(destinations)));
   for (const [route, title] of Object.entries(destinations)) {
     assert.equal(routeFromHash(`#${route}`), route);

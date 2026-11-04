@@ -7,7 +7,18 @@ Para testar a versão que reúne interface e preparador, siga o
 uma pasta nova e com dados sintéticos.
 
 ## Estado
-Estrutura inicial de desenvolvimento. O código operacional permanece no computador corporativo e **não foi importado**.
+Desenvolvimento em branches e PRs de rascunho. A base pessoal do Jarvis enviada
+em ZIP foi analisada separadamente e permanece fora deste repositório, junto de
+suas configurações privadas. Produção e automação GGO não foram executadas.
+
+A [integração local da nova interface com a voz](docs/INTEGRACAO_VOZ_LOCAL.md)
+prepara outra pasta a partir do Jarvis pessoal, preservando o `main.py` e a origem.
+O preparador usa o Python existente; não exige instalação de Node ou Git no
+computador para criar essa cópia.
+
+JARVIS é o aplicativo principal, com o GGO dentro do catálogo **Agentes**.
+O mesmo roteiro inclui atualização da cópia já testada e um iniciador no
+Desktop que abre o `main.py` e a tela LED em janela própria do Edge.
 
 A [interface demonstrativa do Jarvis](interface/index.html) pode ser aberta
 diretamente no navegador. Ela inclui reator LED central, botões 3D e simulações
@@ -27,9 +38,12 @@ A interface anterior e a automação existente permanecem preservadas.
 ## Desenvolvimento
 Alterações devem passar por pull request e testes. A execução do Dux e do Excel corporativo exige computador autorizado.
 
-Para executar a suíte com Python 3.11, sem dependências adicionais:
+Para executar a suíte com Python 3.11, instale as dependências dos testes de voz
+em um ambiente virtual. Os testes do preparador PowerShell também requerem
+Git e PowerShell 7.4 ou superior:
 
 ```sh
+python -m pip install -r requirements-test-voz.txt
 python -m unittest discover -s tests -v
 ```
 

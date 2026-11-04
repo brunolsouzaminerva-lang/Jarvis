@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'interface-oficial/**'
+      - 'integracao/**'
       - 'tests-ui/**'
       - 'package*.json'
       - 'playwright.config.mjs'
@@ -14,6 +15,7 @@ on:
   pull_request:
     paths:
       - 'interface-oficial/**'
+      - 'integracao/**'
       - 'tests-ui/**'
       - 'package*.json'
       - 'playwright.config.mjs'

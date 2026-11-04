@@ -4,6 +4,8 @@ __pycache__/
 venv/
 .env
 .env.*
+api_keys.json
+.jarvis-interface.json
 !.env.example
 *.log
 *.xlsx

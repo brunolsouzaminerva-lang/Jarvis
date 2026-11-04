@@ -1,5 +1,5 @@
 export const ROUTES = Object.freeze([
-  'home', 'ggo', 'automacao', 'indicadores', 'relatorios', 'agenda', 'configuracoes',
+  'home', 'agentes', 'ggo', 'automacao', 'indicadores', 'relatorios', 'agenda', 'configuracoes',
 ]);
 
 export const STATES = Object.freeze([
@@ -8,6 +8,7 @@ export const STATES = Object.freeze([
 
 export const SCREEN_TITLES = Object.freeze({
   home: 'JARVIS',
+  agentes: 'Agentes',
   ggo: 'GGO',
   automacao: 'Automação',
   indicadores: 'Indicadores',

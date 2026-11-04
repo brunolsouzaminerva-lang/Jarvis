@@ -5,6 +5,7 @@ const app = document.getElementById('app');
 const root = document.getElementById('view-root');
 const dialog = document.getElementById('feature-dialog');
 const paths = {
+  agentes: ['M3 3h7v7H3ZM14 3h7v7h-7ZM3 14h7v7H3ZM14 14h7v7h-7Z'],
   ggo: ['M4 3v17h17', 'M9 15v-4m5 4V6m5 9v-6'],
   automacao: ['m13 2-9 12h7l-1 8 10-13h-8Z'],
   indicadores: ['M3 17 9 11l4 4 8-10', 'M15 5h6v6'],
@@ -18,6 +19,7 @@ const paths = {
   check: ['m5 12 4 4L19 6'],
 };
 let visualState = 'idle';
+let voiceStatus = null;
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -111,10 +113,29 @@ function homeScreen() {
   const screen = element('section', 'home-screen');
   const mainTitle = element('h1', 'visually-hidden', 'JARVIS');
   mainTitle.tabIndex = -1;
-  const ggo = element('a', 'primary-ggo');
-  ggo.href = '#ggo';
-  ggo.append(icon('ggo'), element('span', '', 'GGO'));
-  screen.append(mainTitle, reactor(), microphone(), ggo);
+  const agents = element('a', 'primary-agents');
+  agents.href = '#agentes';
+  agents.append(icon('agentes'), element('span', '', 'Agentes'));
+  screen.append(mainTitle, reactor(), microphone(), agents);
+  return screen;
+}
+
+function agentsScreen() {
+  const screen = element('section', 'module-screen agents-screen');
+  screen.append(heading('Agentes', 'SEU JARVIS', 'Escolha uma especialidade para trabalhar com o Jarvis.'));
+  const grid = element('div', 'agents-grid');
+  const ggo = element('article', 'agent-card');
+  ggo.append(icon('ggo', 'icon feature-symbol'), element('p', 'eyebrow', 'AGENTE'),
+    element('h2', '', 'GGO'), element('p', 'card-description', 'Engenharia e Controladoria em um mesmo espaço.'),
+    element('span', 'outline-label', 'Integração não configurada'));
+  const open = element('a', 'button button-primary', 'Abrir GGO');
+  open.href = '#ggo';
+  open.append(icon('arrow'));
+  ggo.append(open);
+  grid.append(ggo);
+  const back = element('a', 'back-link', 'Voltar ao Jarvis');
+  back.href = '#home';
+  screen.append(grid, back);
   return screen;
 }
 
@@ -233,14 +254,16 @@ function moduleScreen(route) {
   return screen;
 }
 
-function updateState(value) {
+function updateState(value, status = null) {
   visualState = stateFromValue(value);
   const sphere = document.getElementById('reactor');
   if (!sphere) return;
+  const label = status?.label || STATE_DETAILS[visualState].label;
+  const caption = status?.caption || STATE_DETAILS[visualState].caption;
   sphere.dataset.state = visualState;
-  sphere.setAttribute('aria-label', `Reator JARVIS — ${STATE_DETAILS[visualState].label}`);
-  document.getElementById('reactor-status').textContent = STATE_DETAILS[visualState].label;
-  document.getElementById('state-caption').textContent = STATE_DETAILS[visualState].caption;
+  sphere.setAttribute('aria-label', `Reator JARVIS — ${label}`);
+  document.getElementById('reactor-status').textContent = label;
+  document.getElementById('state-caption').textContent = caption;
   document.querySelectorAll('[data-state-choice]').forEach((button) => {
     button.setAttribute('aria-pressed', String(button.dataset.stateChoice === visualState));
   });
@@ -253,19 +276,21 @@ function render(focus = true) {
   visualState = 'idle';
   app.dataset.route = route;
   document.getElementById('nav-current').textContent = getScreenTitle(route);
-  document.title = route === 'home' ? 'JARVIS' : `${getScreenTitle(route)} · JARVIS`;
-  const screen = route === 'home' ? homeScreen() : route === 'ggo' ? ggoScreen()
+  document.title = 'JARVIS';
+  const screen = route === 'home' ? homeScreen() : route === 'agentes' ? agentsScreen() : route === 'ggo' ? ggoScreen()
     : route === 'configuracoes' ? settingsScreen() : moduleScreen(route);
   root.replaceChildren(screen);
   if (focus) {
     screen.querySelector('h1').focus({ preventScroll: true });
     window.scrollTo(0, 0);
   }
+  if (voiceStatus) updateState(voiceStatus.state, voiceStatus);
+  window.dispatchEvent(new CustomEvent('jarvis:render', { detail: { route } }));
 }
 
 app.addEventListener('click', (event) => {
   const choice = event.target.closest('[data-state-choice]');
-  if (choice) { updateState(choice.dataset.stateChoice); return; }
+  if (choice) { if (!voiceStatus) updateState(choice.dataset.stateChoice); return; }
   const unavailable = event.target.closest('[data-unconfigured]');
   if (!unavailable) return;
   document.getElementById('areas-menu').open = false;
@@ -290,6 +315,12 @@ document.addEventListener('keydown', (event) => {
   }
 });
 window.addEventListener('hashchange', () => render());
+window.addEventListener('jarvis:voice', (event) => {
+  const status = event.detail;
+  if (!status || typeof status.label !== 'string' || typeof status.caption !== 'string') return;
+  voiceStatus = { ...status, state: stateFromValue(status.state) };
+  updateState(voiceStatus.state, voiceStatus);
+});
 
 const clockFormat = new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hour12: false,
