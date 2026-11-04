@@ -73,9 +73,10 @@ def _inventory(root: Path) -> tuple[dict[str, str], list[str]]:
 def preparar(origem: Path, destino: Path, *, corrigir_datas: bool = False) -> Path:
     """Copia verificada; nunca inicia main.py, DUX, Excel, voz ou rede."""
     source, target = _path(origem), _path(destino)
+    repository = REPOSITORY_ROOT.resolve()
     if source == target or source in target.parents or target in source.parents:
         raise RuntimeError("Origem e destino precisam ser pastas separadas, sem sobreposicao.")
-    if target == REPOSITORY_ROOT or REPOSITORY_ROOT in target.parents:
+    if target == repository or repository in target.parents:
         raise RuntimeError("O destino deve ficar fora do repositorio GitHub.")
     if any((node / ".git").exists() or (node / ".git").is_symlink()
            for node in (target, *target.parents)):
@@ -92,8 +93,8 @@ def preparar(origem: Path, destino: Path, *, corrigir_datas: bool = False) -> Pa
     if any((source / name).exists() for name in ("interface-oficial", BACKUP, MARKER)):
         raise RuntimeError("A origem ja contem uma integracao. Use a pasta original preservada.")
 
-    bridge = REPOSITORY_ROOT / "integracao" / "browser_audio_bridge.py"
-    assets = REPOSITORY_ROOT / "interface-oficial"
+    bridge = repository / "integracao" / "browser_audio_bridge.py"
+    assets = repository / "interface-oficial"
     if not bridge.is_file() or any(not (assets / name).is_file() for name in ASSETS):
         raise RuntimeError("Baixe a copia completa de desenvolvimento antes de preparar.")
     compile(bridge.read_text(encoding="utf-8"), str(bridge), "exec")

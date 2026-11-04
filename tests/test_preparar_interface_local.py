@@ -56,7 +56,8 @@ class PersonalInterfacePreparationTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="jarvis-interface-sintetica-")
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        # Windows TEMP may use the RUNNER~1 short alias; the builder resolves it.
+        self.root = Path(self.temp.name).resolve()
         self.source = self.root / "origem pessoal"
         self.target = self.root / "nova copia"
         self.development = self.root / "distribuicao de desenvolvimento"
