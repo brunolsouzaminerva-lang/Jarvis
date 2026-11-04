@@ -10,6 +10,20 @@ const destinations = {
 };
 const states = ['idle', 'listening', 'processing', 'responding', 'error', 'disconnected'];
 
+async function openAreasMenu(page) {
+  const menu = page.locator('#areas-menu');
+  if (!(await menu.evaluate((details) => details.open))) {
+    await menu.locator('summary').click();
+  }
+  await expect(menu).toHaveJSProperty('open', true);
+  return menu;
+}
+
+async function selectArea(page, route) {
+  const menu = await openAreasMenu(page);
+  await menu.locator(`a[href="#${route}"]`).click();
+}
+
 test.beforeEach(async ({ page }) => {
   page.jarvisErrors = [];
   page.jarvisExternalRequests = [];
@@ -27,21 +41,24 @@ test.afterEach(async ({ page }) => {
   expect(page.jarvisExternalRequests, 'A interface isolada não deve chamar serviços externos').toEqual([]);
 });
 
-test('home apresenta JARVIS, o reator central e os seis botões de navegação', async ({ page }) => {
+test('home apresenta JARVIS, o reator central e os seis destinos no menu de áreas', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'home');
-  await expect(page.getByRole('heading', { level: 1, name: 'JARVIS', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'JARVIS', exact: true })).toHaveText('JARVIS');
+  await expect(page.locator('.brand-wordmark')).toBeVisible();
+  await expect(page.locator('.brand-wordmark')).toHaveText('JARVIS');
   await expect(page.locator('#reactor')).toHaveAttribute('data-state', 'idle');
+  const menu = await openAreasMenu(page);
   for (const route of Object.keys(destinations)) {
-    await expect(page.locator(`a[href="#${route}"]:visible`).first()).toBeVisible();
+    await expect(menu.locator(`a[href="#${route}"]`)).toBeVisible();
   }
   await expect(page.getByRole('link', { name: 'Configurar microfone', exact: true })).toBeVisible();
 });
 
-test('todos os botões da home abrem uma tela real com o título correto', async ({ page }) => {
+test('todos os destinos do menu de áreas abrem uma tela real com o título correto', async ({ page }) => {
   for (const [route, title] of Object.entries(destinations)) {
     await page.goto('/');
-    await page.locator(`a[href="#${route}"]:visible`).first().click();
+    await selectArea(page, route);
     await expect(page.locator('#app')).toHaveAttribute('data-route', route);
     await expect(page.getByRole('heading', { level: 1, name: title, exact: true })).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`#${route}$`));
@@ -51,7 +68,7 @@ test('todos os botões da home abrem uma tela real com o título correto', async
 test('hash direto, voltar e avançar preservam a navegação entre telas', async ({ page }) => {
   await page.goto('/#ggo');
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'ggo');
-  await page.locator('a[href="#configuracoes"]:visible').first().click();
+  await selectArea(page, 'configuracoes');
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'configuracoes');
   await page.goBack();
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'ggo');
@@ -62,17 +79,55 @@ test('hash direto, voltar e avançar preservam a navegação entre telas', async
 test('uma rota desconhecida apresenta a home de forma segura', async ({ page }) => {
   await page.goto('/#rota-inexistente');
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'home');
-  await expect(page.getByRole('heading', { level: 1, name: 'JARVIS', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'JARVIS', exact: true })).toHaveText('JARVIS');
+  await expect(page.locator('.brand-wordmark')).toBeVisible();
 });
 
 test('teclado aciona a navegação e recebe foco no conteúdo de destino', async ({ page }) => {
   await page.goto('/');
-  const ggo = page.locator('a[href="#ggo"]:visible').first();
+  const summary = page.locator('#areas-menu summary');
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#areas-menu')).toHaveJSProperty('open', true);
+  const ggo = page.locator('#areas-menu a[href="#ggo"]');
   await ggo.focus();
   await page.keyboard.press('Enter');
   const heading = page.getByRole('heading', { level: 1, name: 'GGO', exact: true });
   await expect(heading).toBeVisible();
   await expect(heading).toBeFocused();
+});
+
+test('botão GGO em destaque abre o painel secundário', async ({ page }) => {
+  await page.goto('/');
+  const primary = page.locator('.primary-ggo');
+  await expect(primary).toHaveAttribute('href', '#ggo');
+  await expect(primary).toBeVisible();
+  await primary.click();
+  await expect(page.locator('#app')).toHaveAttribute('data-route', 'ggo');
+  await expect(page.getByRole('heading', { level: 1, name: 'GGO', exact: true })).toBeVisible();
+});
+
+test('Escape fecha o menu de áreas e devolve o foco ao acionador', async ({ page }) => {
+  await page.goto('/');
+  const menu = await openAreasMenu(page);
+  const summary = menu.locator('summary');
+  await menu.locator('a[href="#agenda"]').focus();
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveJSProperty('open', false);
+  await expect(summary).toBeFocused();
+});
+
+test('status de conexão fecha o menu e informa que não há integração configurada', async ({ page }) => {
+  await page.goto('/');
+  const menu = await openAreasMenu(page);
+  const status = page.getByRole('button', { name: 'Status de conexão: não configurado', exact: true });
+  await status.click();
+  await expect(menu).toHaveJSProperty('open', false);
+  await expect(page.locator('#feature-dialog')).toBeVisible();
+  await expect(page.locator('#feature-dialog')).toContainText('Não configurado');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#feature-dialog')).not.toBeVisible();
+  await expect(status).toBeFocused();
 });
 
 test('atalho de conteúdo preserva a seção atual e move o foco para o conteúdo', async ({ page }) => {
@@ -112,7 +167,9 @@ test('microfone abre a configuração sem solicitar áudio nem iniciar reconheci
     window.webkitSpeechRecognition = rejectRecognition;
   });
   await page.goto('/');
-  await page.getByRole('link', { name: 'Configurar microfone', exact: true }).click();
+  const microphone = page.getByRole('link', { name: 'Configurar microfone', exact: true });
+  await expect(microphone).toHaveCount(1);
+  await microphone.click();
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'configuracoes');
   await expect(page.getByText(/não configurado/i).first()).toBeVisible();
   expect(await page.evaluate(() => window.jarvisAudioCalls)).toBe(0);
@@ -120,7 +177,7 @@ test('microfone abre a configuração sem solicitar áudio nem iniciar reconheci
 
 test('ações operacionais ausentes mostram Não configurado e o diálogo devolve o foco', async ({ page }) => {
   await page.goto('/#ggo');
-  const action = page.locator('[data-unconfigured]:visible').first();
+  const action = page.locator('.ggo-layout [data-unconfigured]:visible').first();
   await action.click();
   const dialog = page.locator('#feature-dialog');
   await expect(dialog).toBeVisible();
@@ -155,9 +212,9 @@ test('navegação e prévias permanecem funcionais sem rede após carregar a int
   await page.goto('/');
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'home');
   await context.setOffline(true);
-  await page.locator('a[href="#ggo"]:visible').first().click();
+  await page.locator('.primary-ggo').click();
   await expect(page.locator('#app')).toHaveAttribute('data-route', 'ggo');
-  await page.locator('a[href="#configuracoes"]:visible').first().click();
+  await selectArea(page, 'configuracoes');
   await page.locator('[data-state-choice="processing"]').click();
   await expect(page.locator('#reactor')).toHaveAttribute('data-state', 'processing');
 });

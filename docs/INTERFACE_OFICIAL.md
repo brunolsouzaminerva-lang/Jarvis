@@ -4,9 +4,10 @@ Nova home e painel GGO preparados em uma camada web isolada, para revisão da
 interface oficial. A aplicação do notebook e sua automação não estão disponíveis
 neste checkout. Nenhum arquivo da pasta corporativa foi acessado ou alterado.
 
-As duas imagens aprovadas na conversa com ChatGPT não estão anexadas à issue.
-Elas foram solicitadas ao usuário. O visual atual segue a descrição textual;
-a reprodução fiel das referências continua pendente de recebê-las.
+A referência da tela inicial foi recebida na conversa e aplicada: moldura azul
+recortada, núcleo azul/branco, microfone com ondas decorativas, frase
+“Fale comigo, senhor.” e botão GGO principal. A imagem específica do painel GGO
+ainda não foi disponibilizada; sua reprodução fiel continua pendente.
 
 ![Home JARVIS com núcleo azul e anel branco](images/jarvis-oficial-home.png)
 
@@ -21,6 +22,7 @@ automação, testes Python e workflow GGO.
 | --- | --- |
 | `interface-oficial/index.html` | Shell acessível, cabeçalho, conteúdo e diálogo de serviço ausente. |
 | `interface-oficial/styles.css` | Tema LED, botões 3D, seis estados visuais, responsividade e redução de movimento. |
+| `interface-oficial/home-reference.css` | Composição da home conforme a imagem: moldura, anéis, microfone, botão GGO e menu do cabeçalho. |
 | `interface-oficial/core.js` | Rotas permitidas, estados e títulos; funções puras sem DOM ou serviços. |
 | `interface-oficial/app.js` | Componentes reutilizáveis de reator, navegação, botões, cartões e telas. |
 | `tests-ui/` | Testes unitários e de navegador e servidor estático local de revisão. |
@@ -33,10 +35,16 @@ desenvolvimento, fixada no lockfile.
 
 ## Navegação e estados
 
-A home se chama **JARVIS**, com núcleo azul LED, anel branco, seis botões 3D e
-microfone em destaque na parte inferior. Os destinos são `#ggo`, `#automacao`,
+A home se chama **JARVIS**, com núcleo azul LED/branco, anel segmentado e
+microfone em destaque na parte inferior. O botão GGO é a ação principal;
+os seis destinos continuam acessíveis pelo menu “Áreas do Jarvis” no cabeçalho.
+Os destinos são `#ggo`, `#automacao`,
 `#indicadores`, `#relatorios`, `#agenda` e `#configuracoes`; voltar/avançar do
 navegador e links diretos funcionam. Rotas desconhecidas apresentam a home.
+O menu funciona por teclado e fecha com Escape, devolvendo o foco ao acionador.
+Os símbolos de minimizar/fechar reproduzem o desenho, mas ficam desabilitados no
+navegador; nenhum comando de janela nativa inexistente é executado. Conectividade
+e áudio permanecem não configurados, independentemente do brilho decorativo.
 
 O painel GGO tem menu lateral, círculo central, status, execução rápida e
 relatórios. DUX/Excel aparecem como **Não configurado**, e a Etapa 201 permanece
@@ -90,8 +98,9 @@ npx playwright install chromium
 npm test
 ```
 
-`npm test` executa 5 testes unitários de rotas/estados e 12 testes de navegador:
-home, seis destinos, hash/voltar/avançar, fallback, teclado/foco, atalho de conteúdo,
+`npm test` executa 5 testes unitários de rotas/estados e 15 testes de navegador:
+home, seis destinos no menu, CTA GGO, Escape do menu, conexão não configurada, hash/voltar/avançar,
+fallback, teclado/foco, atalho de conteúdo,
 seis estados, microfone sem áudio, serviços ausentes, mobile, movimento reduzido
 e funcionamento sem rede após o carregamento. Cada caso de navegador confere
 ausência de erros JavaScript e requisições externas.
@@ -116,6 +125,6 @@ Nenhuma migração, escrita em produção ou alteração da pasta original preci
 desfeita. O PR é separado e empilhado sobre o PR #3; abandonar a nova pasta/branch
 de revisão não modifica aquela interface.
 
-Pendências: receber as duas referências para ajuste visual fiel, revisar o layout
+Pendências: receber a referência específica do painel GGO, revisar o layout
 e definir contratos autorizados para voz e demais serviços. Conectar DUX, Excel,
 GGO, microfone ou sincronização é trabalho futuro e não está habilitado nesta UI.

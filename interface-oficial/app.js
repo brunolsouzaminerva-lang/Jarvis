@@ -39,16 +39,6 @@ function icon(name, className = 'icon') {
   return svg;
 }
 
-function navButton(label, route, name = route) {
-  const link = element('a', 'tile-button');
-  link.href = `#${route}`;
-  link.dataset.routeLink = route;
-  const symbol = element('span', 'tile-icon');
-  symbol.append(icon(name));
-  link.append(symbol, element('span', 'tile-label', label), icon('arrow', 'icon tile-arrow'));
-  return link;
-}
-
 function featureButton(label, feature = label) {
   const button = element('button', 'button button-secondary', label);
   button.type = 'button';
@@ -96,29 +86,35 @@ function reactor() {
 
 function microphone() {
   const wrap = element('div', 'microphone-zone');
+  const signal = element('div', 'mic-signal');
+  const wave = () => {
+    const bars = element('span', 'audio-wave');
+    bars.setAttribute('aria-hidden', 'true');
+    for (const height of [2, 3, 4, 8, 12, 19, 29, 43, 34, 23, 13, 6, 3]) {
+      const bar = element('i');
+      bar.style.setProperty('--bar-height', `${height}px`);
+      bars.append(bar);
+    }
+    return bars;
+  };
   const link = element('a', 'mic-button');
   link.href = '#configuracoes';
   link.setAttribute('aria-label', 'Configurar microfone');
   link.append(icon('microphone'));
-  wrap.append(link, element('strong', 'mic-label', 'Seu comando começa aqui.'),
+  signal.append(wave(), link, wave());
+  wrap.append(signal, element('strong', 'mic-label', 'Fale comigo, senhor.'),
     element('span', 'mic-status', 'Microfone não configurado'));
   return wrap;
 }
 
 function homeScreen() {
   const screen = element('section', 'home-screen');
-  const title = element('div', 'home-heading');
-  title.append(element('p', 'home-kicker', 'SEU ASSISTENTE PESSOAL'));
-  const mainTitle = element('h1', '', 'JARVIS');
+  const mainTitle = element('h1', 'visually-hidden', 'JARVIS');
   mainTitle.tabIndex = -1;
-  title.append(mainTitle, element('p', 'home-description', 'Uma nova forma de estar no controle.'));
-  const actions = element('nav', 'home-actions');
-  actions.setAttribute('aria-label', 'Áreas do Jarvis');
-  for (const [label, route] of [['GGO', 'ggo'], ['Automação', 'automacao'], ['Indicadores', 'indicadores'],
-    ['Relatórios', 'relatorios'], ['Agenda', 'agenda'], ['Configurações', 'configuracoes']]) {
-    actions.append(navButton(label, route));
-  }
-  screen.append(title, reactor(), actions, microphone());
+  const ggo = element('a', 'primary-ggo');
+  ggo.href = '#ggo';
+  ggo.append(icon('ggo'), element('span', '', 'GGO'));
+  screen.append(mainTitle, reactor(), microphone(), ggo);
   return screen;
 }
 
@@ -253,6 +249,7 @@ function updateState(value) {
 function render(focus = true) {
   const route = routeFromHash(window.location.hash);
   if (dialog.open) dialog.close();
+  document.getElementById('areas-menu').open = false;
   visualState = 'idle';
   app.dataset.route = route;
   document.getElementById('nav-current').textContent = getScreenTitle(route);
@@ -266,11 +263,12 @@ function render(focus = true) {
   }
 }
 
-root.addEventListener('click', (event) => {
+app.addEventListener('click', (event) => {
   const choice = event.target.closest('[data-state-choice]');
   if (choice) { updateState(choice.dataset.stateChoice); return; }
   const unavailable = event.target.closest('[data-unconfigured]');
   if (!unavailable) return;
+  document.getElementById('areas-menu').open = false;
   document.getElementById('feature-title').textContent = 'Não configurado';
   document.getElementById('feature-message').textContent = `${unavailable.dataset.unconfigured} depende de uma integração autorizada. Esta interface não executa ações no DUX, Excel, GGO ou em outros serviços.`;
   dialog.showModal();
@@ -280,6 +278,17 @@ document.querySelector('.skip-link').addEventListener('click', (event) => {
   document.getElementById('main').focus();
 });
 document.getElementById('feature-close').addEventListener('click', () => dialog.close());
+const areasMenu = document.getElementById('areas-menu');
+areasMenu.addEventListener('click', (event) => {
+  if (event.target.closest('a[href^="#"]')) areasMenu.open = false;
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && areasMenu.open) {
+    event.preventDefault();
+    areasMenu.open = false;
+    areasMenu.querySelector('summary').focus();
+  }
+});
 window.addEventListener('hashchange', () => render());
 
 const clockFormat = new Intl.DateTimeFormat('pt-BR', {
