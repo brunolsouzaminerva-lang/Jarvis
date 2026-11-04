@@ -1,0 +1,42 @@
+name: Advertser Media - fundacao isolada
+on:
+  push:
+    paths:
+      - 'modules/advertser_media/**'
+      - '.github/workflows/advertser-media.yml'
+  pull_request:
+    paths:
+      - 'modules/advertser_media/**'
+      - '.github/workflows/advertser-media.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  foundation:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Testes sinteticos sem dependencias externas
+        shell: python
+        run: |
+          import sys
+          import unittest
+          sys.path.insert(0, 'modules/advertser_media')
+          suite = unittest.defaultTestLoader.discover('modules/advertser_media/tests')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          for case, failure in result.failures + result.errors:
+              message = failure.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print(f'::error title={case.id()}::{message}')
+          sys.exit(0 if result.wasSuccessful() else 1)
+      - name: Contrato publico de capacidades
+        run: python modules/advertser_media/run.py status
