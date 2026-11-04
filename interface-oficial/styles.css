@@ -117,6 +117,10 @@ dialog { background: linear-gradient(140deg,#132c43,#091522); color: #effaff; bo
 
 /* Route headings receive focus for navigation announcements, not keyboard interaction. */
 h1[tabindex="-1"]:focus { outline: none; }
+.voice-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+.voice-actions .button { min-height: 40px; }
+.voice-stop-header { color: #ffb2b2; font-size: 20px; }
+#app[data-voice="local"] .state-button:disabled { cursor: default; opacity: .5; }
 @media (max-width:850px) {
   .settings-screen .settings-layout { grid-template-columns: 1fr; }
   .ggo-sidebar-title { margin: 0 10px 0 0; font-size: 15px; }

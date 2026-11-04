@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Dependencias dos testes sinteticos de voz
+        run: python -m pip install -r requirements-test-voz.txt
       - name: PowerShell disponivel para testes de integracao sinteticos
         shell: pwsh
         run: $PSVersionTable.PSVersion.ToString()

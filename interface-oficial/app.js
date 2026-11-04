@@ -18,6 +18,7 @@ const paths = {
   check: ['m5 12 4 4L19 6'],
 };
 let visualState = 'idle';
+let voiceStatus = null;
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -233,14 +234,16 @@ function moduleScreen(route) {
   return screen;
 }
 
-function updateState(value) {
+function updateState(value, status = null) {
   visualState = stateFromValue(value);
   const sphere = document.getElementById('reactor');
   if (!sphere) return;
+  const label = status?.label || STATE_DETAILS[visualState].label;
+  const caption = status?.caption || STATE_DETAILS[visualState].caption;
   sphere.dataset.state = visualState;
-  sphere.setAttribute('aria-label', `Reator JARVIS — ${STATE_DETAILS[visualState].label}`);
-  document.getElementById('reactor-status').textContent = STATE_DETAILS[visualState].label;
-  document.getElementById('state-caption').textContent = STATE_DETAILS[visualState].caption;
+  sphere.setAttribute('aria-label', `Reator JARVIS — ${label}`);
+  document.getElementById('reactor-status').textContent = label;
+  document.getElementById('state-caption').textContent = caption;
   document.querySelectorAll('[data-state-choice]').forEach((button) => {
     button.setAttribute('aria-pressed', String(button.dataset.stateChoice === visualState));
   });
@@ -261,11 +264,13 @@ function render(focus = true) {
     screen.querySelector('h1').focus({ preventScroll: true });
     window.scrollTo(0, 0);
   }
+  if (voiceStatus) updateState(voiceStatus.state, voiceStatus);
+  window.dispatchEvent(new CustomEvent('jarvis:render', { detail: { route } }));
 }
 
 app.addEventListener('click', (event) => {
   const choice = event.target.closest('[data-state-choice]');
-  if (choice) { updateState(choice.dataset.stateChoice); return; }
+  if (choice) { if (!voiceStatus) updateState(choice.dataset.stateChoice); return; }
   const unavailable = event.target.closest('[data-unconfigured]');
   if (!unavailable) return;
   document.getElementById('areas-menu').open = false;
@@ -290,6 +295,12 @@ document.addEventListener('keydown', (event) => {
   }
 });
 window.addEventListener('hashchange', () => render());
+window.addEventListener('jarvis:voice', (event) => {
+  const status = event.detail;
+  if (!status || typeof status.label !== 'string' || typeof status.caption !== 'string') return;
+  voiceStatus = { ...status, state: stateFromValue(status.state) };
+  updateState(voiceStatus.state, voiceStatus);
+});
 
 const clockFormat = new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hour12: false,

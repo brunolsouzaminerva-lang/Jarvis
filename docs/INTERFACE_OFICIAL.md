@@ -1,8 +1,11 @@
 # Interface JARVIS — proposta da issue #5
 
-Nova home e painel GGO preparados em uma camada web isolada, para revisão da
-interface oficial. A aplicação do notebook e sua automação não estão disponíveis
-neste checkout. Nenhum arquivo da pasta corporativa foi acessado ou alterado.
+Este documento descreve a prévia estática da home e do painel GGO. O modo
+opcional que conecta a voz do Jarvis pessoal está no
+[roteiro de integração local](INTEGRACAO_VOZ_LOCAL.md), com preparação em outra
+pasta e teste manual no Windows. A base pessoal enviada em ZIP foi analisada
+separadamente e permanece fora deste checkout. A instalação original e os dados
+operacionais foram preservados.
 
 A referência da tela inicial foi recebida na conversa e aplicada: moldura azul
 recortada, núcleo azul/branco, microfone com ondas decorativas, frase
