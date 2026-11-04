@@ -7,6 +7,10 @@ on:
       - 'package*.json'
       - 'playwright.config.mjs'
       - '.github/workflows/interface.yml'
+      - '.github/workflows/tests.yml'
+      - 'tools/**'
+      - 'tests/**'
+      - 'docs/TESTES_INTEGRADOS.md'
   pull_request:
     paths:
       - 'interface-oficial/**'
@@ -14,6 +18,10 @@ on:
       - 'package*.json'
       - 'playwright.config.mjs'
       - '.github/workflows/interface.yml'
+      - '.github/workflows/tests.yml'
+      - 'tools/**'
+      - 'tests/**'
+      - 'docs/TESTES_INTEGRADOS.md'
   workflow_dispatch:
 permissions:
   contents: read
